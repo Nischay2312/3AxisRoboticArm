@@ -20,6 +20,6 @@
 #define BASE_SERVO_PIN 9
 #define BASE_SERVO_MIN 0
 #define BASE_SERVO_MAX 180
-#define BASE_SERVO_SPEED 2
+#define BASE_SERVO_SPEED 4
 
 #endif

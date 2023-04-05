@@ -10,22 +10,27 @@
 #define SERVOLIB_H_
 
 #include <Servo.h>
+#include "Arduino.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 class ServoLib{
     private:
         uint8_t servoPin;
-        int16_t CurrentPos = 0;
-        int16_t MaxPos;
-        int16_t MinPos;
+        int CurrentPos = 0;
+        int MaxPos;
+        int MinPos;
         uint16_t Speed;
         uint16_t Delay;
+        char buffer[500];
         Servo servo;
         void SetDelay();
 
     public:
-        ServoLib(uint8_t servoPin, int16_t MaxPos, int16_t MinPos, uint16_t Speed);
-        void ServoGoto(int16_t Pos);
-        void UpdateServoParams(int16_t MaxPos, int16_t MinPos, uint16_t Speed);
+        ServoLib(uint8_t servoPin, int MaxPos, int MinPos, uint16_t Speed);
+        void ServoGoto(int Pos);
+        void UpdateServoParams(int MaxPos, int MinPos, uint16_t Speed);
+        void SetupServo();
 };
 
 #endif

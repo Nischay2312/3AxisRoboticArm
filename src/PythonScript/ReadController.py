@@ -7,10 +7,8 @@ The final idea is to use this controller to control the Robotic Arm
 import hid
 import time
 import controller
+import helperfunctions
 
-def ClearScreen():
-    print(chr(27) + "[2J")
-    print(chr(27) + "[0;0H")
 
 for device in hid.enumerate():
     print(f"0x{device['vendor_id']:04x}:0x{device['product_id']:04x} {device['product_string']}")
@@ -22,6 +20,7 @@ while True:
     PS5Controller.ReadController()
     print("Data Parsed:")
     PS5Controller.PrintData()
+    print(PS5Controller.GetControllerState())
     time.sleep(0.1)
     #clear the screen
-    ClearScreen()
+    helperfunctions.ClearScreen()

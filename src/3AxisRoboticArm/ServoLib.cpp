@@ -22,6 +22,7 @@ ServoLib::ServoLib(uint8_t servoPin, int MaxPos, int MinPos, uint16_t Speed){
     this->MaxPos = MaxPos;
     this->MinPos = MinPos;
     this->Speed = Speed;
+    this->DefaultPos = MinPos + (MaxPos + MinPos)/2;
     this->SetDelay();
 }
 
@@ -40,7 +41,7 @@ void ServoLib::ServoGoto(int Pos){
     else{        
         //Now based on the speed, move the servo to the desired position
         if(this->CurrentPos > Pos){
-            for(int i = this->CurrentPos; i > Pos; i--){
+            for(int i = this->CurrentPos; i > Pos; i-=this->Increment){
                 this->servo.write(i);
                 //sprintf(this->buffer, "Servo Value written: %d\n", i);
                 //Serial.print(this->buffer);
@@ -48,7 +49,7 @@ void ServoLib::ServoGoto(int Pos){
             }
         }
         else{
-            for(int i = this->CurrentPos; i < Pos; i++){
+            for(int i = this->CurrentPos; i < Pos; i+=this->Increment){
                 this->servo.write(i);
                 //sprintf(this->buffer, "Servo Value written: %d\n", i);
                 //Serial.print(this->buffer);
@@ -56,7 +57,26 @@ void ServoLib::ServoGoto(int Pos){
             }
         }
         //Update the current position
+        this->servo.write(Pos);
         this->CurrentPos = Pos; 
+    }
+}
+
+
+/*
+    ServoSetPos: This function sets the position of the servo
+    @param Pos: The position to which the servo should move
+    The Function makes sure that the servo does not move beyond the maximum and minimum positions
+*/
+void ServoLib::ServoSetPos(int Pos){
+    if(Pos > this->MaxPos || Pos < this->MinPos){
+        //sprintf(this->buffer, "Servo SetPOS Escaped\n");
+        //Serial.print(this->buffer);
+        return;
+    }
+    else{
+        this->servo.write(Pos);
+        this->CurrentPos = Pos;
     }
 }
 
@@ -67,22 +87,28 @@ void ServoLib::SetDelay(){
     //Case Statement
     switch(this->Speed){
         case 1: 
-            this->Delay = 40;
+            this->Delay = 22;
+            this->Increment = 8;
             break;
         case 2:
-            this->Delay = 25;
+            this->Delay = 15;
+            this->Increment = 6;
             break;
         case 3:
-            this->Delay = 15;
+            this->Delay = 8;
+            this->Increment = 4;
             break;
         case 4:
-            this->Delay = 8;
+            this->Delay = 4;
+            this->Increment = 2;
             break;
         case 5:
-            this->Delay = 4;
+            this->Delay = 1;
+            this->Increment = 1;
             break;
         default:
             this->Delay = 40;
+            this->Increment = 8;
             break;
     }
 }
@@ -104,6 +130,8 @@ void ServoLib::UpdateServoParams(int MaxPos, int MinPos, uint16_t Speed){
     SetupServo: This function sets up the servo
 */
 void ServoLib::SetupServo(){
-  this->servo.attach(servoPin);
-  this->servo.write(this->CurrentPos);
+    this->servo.attach(servoPin);
+    this->servo.write(this->CurrentPos);
+    //Put the Servo to the initial position
+    this->ServoGoto(this->CurrentPos);
 }

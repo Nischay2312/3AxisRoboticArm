@@ -43,10 +43,12 @@ class Controller:
         self.L2 = report[8]
         self.R2 = report[9]
 
-    def SpitData(self):
-        #output a array of all the variables
-        return [self.LXaxis,self.LYaxis,self.RXaxis,self.RYaxis,self.Dpad,self.Triangle,self.Circle,self.Cross,self.Square,self.L1,self.L2,self.R1,self.R2]
-
+    def GetControllerState(self):
+        #read the controller
+        self.ReadController()
+        #output all variables as a dictionary
+        return {k:v for k, v in self.__dict__.items() if not (k.startswith('__') and k.endswith('__'))}
+    
     def PrintData(self):
         print("LXaxis: ",self.LXaxis)
         print("LYaxis: ",self.LYaxis)

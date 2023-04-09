@@ -22,7 +22,9 @@ ServoLib::ServoLib(uint8_t servoPin, int MaxPos, int MinPos, uint16_t Speed){
     this->MaxPos = MaxPos;
     this->MinPos = MinPos;
     this->Speed = Speed;
-    this->DefaultPos = MinPos + (MaxPos + MinPos)/2;
+    this->DefaultPos = MinPos + (MaxPos - MinPos)/2;
+    //Serial.print("Default Pos set to: ");
+    //Serial.println(this->DefaultPos);
     this->SetDelay();
 }
 
@@ -88,19 +90,19 @@ void ServoLib::SetDelay(){
     switch(this->Speed){
         case 1: 
             this->Delay = 22;
-            this->Increment = 8;
+            this->Increment = 1;
             break;
         case 2:
             this->Delay = 15;
-            this->Increment = 6;
+            this->Increment = 1;
             break;
         case 3:
             this->Delay = 8;
-            this->Increment = 4;
+            this->Increment = 1;
             break;
         case 4:
             this->Delay = 4;
-            this->Increment = 2;
+            this->Increment = 1;
             break;
         case 5:
             this->Delay = 1;
@@ -108,7 +110,7 @@ void ServoLib::SetDelay(){
             break;
         default:
             this->Delay = 40;
-            this->Increment = 8;
+            this->Increment = 1;
             break;
     }
 }

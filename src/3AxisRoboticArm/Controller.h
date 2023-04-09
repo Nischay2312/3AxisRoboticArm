@@ -11,7 +11,7 @@
 
 #include "Arduino.h"
 
-#define ControllerDataLength 6
+#define ControllerDataLength 9
 
 class Controller{
     public:
@@ -21,5 +21,6 @@ class Controller{
     int GetControllerData();
     void PrintControllerData();
     void UpdateDataAverage();
+    int SetupController();
 };
 #endif

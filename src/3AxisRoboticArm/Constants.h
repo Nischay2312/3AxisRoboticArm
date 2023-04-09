@@ -46,7 +46,7 @@
 #define GRIPPER_SERVO_CLOSE 0
 #define GRIPPER_SERVO_OPEN 90
 #define GRIPPER_SERVO_MAX 180
-#define GRIPPER_SERVO_SPEED 2
+#define GRIPPER_SERVO_SPEED 5
 
 // Function Declarations
 void GreetUser();

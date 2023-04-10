@@ -34,7 +34,7 @@ void EyesClass::Initialize_Eyes(){
 /*
     * Function to generate a blink effect
 */
-void EyesClass::Animate_Blink(TFT_eSPI &tft){
+void EyesClass::EyeTest(TFT_eSPI &tft){
 
     //Clear eyes
     this->Clear_Eyes(tft);
@@ -48,31 +48,34 @@ void EyesClass::Animate_Blink(TFT_eSPI &tft){
     this->ShrinkEye(0, 0, 2, tft);
     delay(500);
 
-    //Sqiunt the eyes
-    this->ShrinkEye(0, 70, 6, tft);
+    //Sqiunt the eyes -- slow
+    this->ShrinkEye(0, 70, 12, tft);
     //change mmood to happy
-    this->Mood_State = Happy;
+    this->Mood_State = Angry;
     delay(2000);
 
     //move the 2nd eye to the right
-    this->Move_Eyes(tft, this->Eye1_centerX, this->Eye1_centerY, this->Eye2_centerX+10, this->Eye2_centerY, 2);
+    this->Move_Eyes(tft, this->Eye1_centerX, this->Eye1_centerY, this->Eye2_centerX+3, this->Eye2_centerY, 2);
     delay(10);
 
     //Now open the right eyes
     this->ShrinkEye(0, 12, 2, tft);
     delay(2000);
 
-    //now only close the left eye
     this->ShrinkEye(0, 100, 2, tft);
+    delay(100);
+    this->Mood_State = Sad;
+    //Now open the eyes
+    this->ShrinkEye(0, 60, 2, tft);
     //move the 2nd eye to the left
-    this->Move_Eyes(tft, this->Eye1_centerX+10, this->Eye1_centerY+12, this->Eye2_centerX-5, this->Eye2_centerY+12, 3);
+    this->Move_Eyes(tft, this->Eye1_centerX+10, this->Eye1_centerY+12, this->Eye2_centerX-1, this->Eye2_centerY+5, 3);
     delay(10);
     //now open it
-    this->ShrinkEye(0, 0, 4, tft);
+    this->ShrinkEye(0, 40, 4, tft);
     delay(1000);
     //move eyes back to original position
-    this->Move_Eyes(tft, this->Eye1_centerX-10, this->Eye1_centerY-12, this->Eye2_centerX-5, this->Eye2_centerY-12, 4);
-    delay(1500);
+    this->Move_Eyes(tft, this->Eye1_centerX-10, this->Eye1_centerY-12, this->Eye2_centerX-2, this->Eye2_centerY-5, 4);
+    delay(200);
 
 
 }
@@ -168,12 +171,12 @@ void EyesClass::Draw_Eyes(TFT_eSPI &tft){
             tft.fillEllipse(this->Eye1_centerX-HAPPY_EYE_RADIUS, this->Eye1_centerY+this->Eye1_Current_Height/2, this->Eye1_Current_Width, this->Eye1_Current_Height+3, BG_COLOR);
             break;
         case Sad:
-            //Draw the sad expression
-            tft.fillCircle(this->Eye1_centerX - EYE_WIDTH/4, this->Eye1_centerY + EYE_HEIGHT/4, EYE_WIDTH/8, this->Eye_Color);
+            //Draw the sad expression, a simple inverted triangle
+            tft.fillTriangle(this->Eye1_centerX - this->Eye1_Current_Width, this->Eye1_centerY, this->Eye1_centerX - this->Eye1_Current_Width, this->Eye1_centerY - this->Eye1_Current_Height, this->Eye1_centerX + this->Eye1_Current_Width, this->Eye1_centerY - this->Eye1_Current_Height, BG_COLOR);
             break;
         case Angry:
-            //Draw the angry expression
-            tft.fillCircle(this->Eye1_centerX - EYE_WIDTH/4, this->Eye1_centerY - EYE_HEIGHT/4, EYE_WIDTH/8, this->Eye_Color);
+            //This is simple, make an inverted triangle starting on the top left corner
+            tft.fillTriangle(this->Eye1_centerX - this->Eye1_Current_Width, this->Eye1_centerY - this->Eye1_Current_Height, this->Eye1_centerX + this->Eye1_Current_Width, this->Eye1_centerY - this->Eye1_Current_Height, this->Eye1_centerX + this->Eye1_Current_Width, this->Eye1_centerY, BG_COLOR);
             break;
         default:
             break;
@@ -210,11 +213,11 @@ void EyesClass::Draw_Eyes(TFT_eSPI &tft){
             break;
         case Sad:
             //Draw the sad expression
-            tft.fillCircle(this->Eye2_centerX - EYE_WIDTH/4, this->Eye2_centerY + EYE_HEIGHT/4, EYE_WIDTH/8, this->Eye_Color);
+            tft.fillTriangle(this->Eye2_centerX + this->Eye2_Current_Width, this->Eye2_centerY, this->Eye2_centerX + this->Eye2_Current_Width, this->Eye2_centerY - this->Eye2_Current_Height, this->Eye2_centerX - this->Eye2_Current_Width, this->Eye2_centerY - this->Eye2_Current_Height, BG_COLOR);
             break;
         case Angry:
-            //Draw the angry expression
-            tft.fillCircle(this->Eye2_centerX - EYE_WIDTH/4, this->Eye2_centerY - EYE_HEIGHT/4, EYE_WIDTH/8, this->Eye_Color);
+            //Same a eye 1 angry but sides flipped
+            tft.fillTriangle(this->Eye2_centerX + this->Eye2_Current_Width, this->Eye2_centerY - this->Eye2_Current_Height, this->Eye2_centerX - this->Eye2_Current_Width, this->Eye2_centerY - this->Eye2_Current_Height, this->Eye2_centerX - this->Eye2_Current_Width, this->Eye2_centerY, BG_COLOR);
             break;
         default:
             break;

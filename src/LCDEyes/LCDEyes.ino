@@ -37,31 +37,7 @@ void setup()
 
 void loop()
 {
-  Eyes.Animate_Blink(tft);
+  Eyes.EyeTest(tft);
   delay(500);
 }
 
-void EyeScroll(){
-  //Draw the eyes
-  Eyes.Draw_Eyes(tft);
-  delay(1000);
-  for(int i = 0; i < 10; i++){
-    //Clear the old eyes
-    Eyes.Clear_Eyes(tft);
-    //Move the eyes
-    Eyes.Move_Eyes(2, 2, 2, 2);
-    //Draw the new eyes
-    Eyes.Draw_Eyes(tft);
-    delay(50);
-  }
-  //Now go back to the original position
-  for(int i = 0; i < 10; i++){
-    //Clear the old eyes
-    Eyes.Clear_Eyes(tft);
-    //Move the eyes
-    Eyes.Move_Eyes(-2, -2, -2, -2);
-    //Draw the new eyes
-    Eyes.Draw_Eyes(tft);
-    delay(50);
-  }
-}

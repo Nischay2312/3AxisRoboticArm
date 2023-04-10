@@ -30,12 +30,6 @@
 
 class EyesClass{
     private:
-    enum Mood{
-      Happy,
-      Sad,
-      Angry,
-      Neutral
-    };
     uint16_t Eye1_centerX;
     uint16_t Eye1_centerY;
     uint16_t Eye2_centerX;
@@ -54,13 +48,24 @@ class EyesClass{
     uint8_t Mood_State;
     
     public:
+        enum Mood{
+      Happy,
+      Sad,
+      Angry,
+      Neutral
+    };
     void Initialize_Eyes();
-    void Animate_Blink(TFT_eSPI &tft);
+    void EyeTest(TFT_eSPI &tft);
     void ShrinkEye(uint8_t EyeSelect, int16_t Redction_pct, uint16_t Frames, TFT_eSPI &tft);
     void Clear_Eyes(TFT_eSPI &tft);
     void Draw_Eyes(TFT_eSPI &tft);
     void Move_Eyes(int Eye1_x, int Eye1_y, int Eye2_x, int Eye2_y);
     void Move_Eyes(TFT_eSPI &tft, int Eye1_x, int Eye1_y, int Eye2_x, int Eye2_y, uint16_t Frames);
+    void Squint_Eyes(TFT_eSPI &tft);
+    void CloseEyes(TFT_eSPI &tft);
+    void OpenEyes(TFT_eSPI &tft);
+    void ChangeMood(Mood mood);
+    
 };
 
 #endif

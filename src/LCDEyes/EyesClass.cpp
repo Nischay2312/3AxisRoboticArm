@@ -90,7 +90,7 @@ void EyesClass::ChangeMood(Mood mood){
     * @param tft - TFT_eSPI object to draw on
 */
 void EyesClass::Squint_Eyes(TFT_eSPI &tft){
-  this->ShrinkEye(0, 70, 10, tft);
+  this->ShrinkEye(0, 70, 6, tft);
 }
 
 /*
@@ -98,7 +98,7 @@ void EyesClass::Squint_Eyes(TFT_eSPI &tft){
     * @param tft - TFT_eSPI object to draw on
 */
 void EyesClass::OpenEyes(TFT_eSPI &tft){
-  this->ShrinkEye(0, 0, 10, tft);
+  this->ShrinkEye(0, 0, 3, tft);
 }
 
 /*
@@ -106,7 +106,7 @@ void EyesClass::OpenEyes(TFT_eSPI &tft){
     * @param tft - TFT_eSPI object to draw on
 */
 void EyesClass::CloseEyes(TFT_eSPI &tft){
-  this->ShrinkEye(0, 100, 10, tft);
+  this->ShrinkEye(0, 100, 3, tft);
 }
 
 /*

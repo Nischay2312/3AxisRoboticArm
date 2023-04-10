@@ -22,22 +22,56 @@
 TFT_eSPI tft = TFT_eSPI();  
 EyesClass Eyes;
 
-void EyeScroll();
 
 void setup()
 {
   Serial.begin(115200);
+  while(!Serial);
+  Serial.println("Serial Setup Done");
   tft.init();            // initialize LCD
   tft.setRotation(1);
   //We want black background
   tft.fillScreen(BG_COLOR);
   Eyes.Initialize_Eyes();
+  //Eyes.EyeTest(tft);
+  Serial.println("Setup Routine Done");
 }
 
 
 void loop()
 {
-  Eyes.EyeTest(tft);
-  delay(500);
+  //Read Serial Input
+  while(Serial.available()){
+    //Read Serial Input
+    String SerialData = Serial.readStringUntil('\n');
+    //Echo Serial Input
+    Serial.println(SerialData);
+    
+    //Now check if the Serial Input is a "FF, X,Y" string
+    if(SerialData.substring(0, SerialData.indexOf(',')) == "FF"){
+      SerialData = SerialData.substring(SerialData.indexOf(',') + 1);
+      //Get the X and Y values
+      int X = SerialData.substring(0, SerialData.indexOf(',')).toInt();
+      int Y = SerialData.substring(SerialData.indexOf(',') + 1).toInt();
+
+      //get the Final X and Y values
+      int Eye1FinalX = map(X, 0, 255, 15, 75);
+      int Eye1FinalY = map(Y, 0, 255, 24, 104);
+      int Eye2FinalX = map(X, 0, 255, 85, 145);
+      int Eye2FinalY = map(Y, 0, 255, 24, 104);
+
+      //Set the X and Y values
+      Eyes.Move_Eyes(tft, Eye1FinalX, Eye1FinalY, Eye2FinalX, Eye2FinalY, 4);
+      //Clear the Serial Buffer
+      while(Serial.available()){
+        Serial.read();
+      }
+    }
+  }
+
+    Eyes.CloseEyes(tft);
+    delay(50);
+    Eyes.OpenEyes(tft);
+  delay(50);
 }
 

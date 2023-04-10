@@ -39,32 +39,29 @@ void EyesClass::EyeTest(TFT_eSPI &tft){
     //Clear eyes
     this->Clear_Eyes(tft);
 
-    this->Mood_State = Neutral;
+    this->ChangeMood(Neutral);
     //First close both Eyes
-    this->ShrinkEye(0, 100, 2, tft);
+    this->CloseEyes(tft);
     delay(100);
-
     //Now open the eyes
-    this->ShrinkEye(0, 0, 2, tft);
+    this->OpenEyes(tft);
     delay(500);
-
     //Sqiunt the eyes -- slow
-    this->ShrinkEye(0, 70, 12, tft);
-    //change mmood to happy
-    this->Mood_State = Angry;
+    this->Squint_Eyes(tft);
+    //change mmood to Angry
+    this->ChangeMood(Angry);
     delay(2000);
-
     //move the 2nd eye to the right
     this->Move_Eyes(tft, this->Eye1_centerX, this->Eye1_centerY, this->Eye2_centerX+3, this->Eye2_centerY, 2);
     delay(10);
-
-    //Now open the right eyes
+    //Now close the eyes but not fully
     this->ShrinkEye(0, 12, 2, tft);
     delay(2000);
-
+    //Now close completely
     this->ShrinkEye(0, 100, 2, tft);
     delay(100);
-    this->Mood_State = Sad;
+    //change mood to Sad
+    this->ChangeMood(Sad);
     //Now open the eyes
     this->ShrinkEye(0, 60, 2, tft);
     //move the 2nd eye to the left
@@ -78,6 +75,38 @@ void EyesClass::EyeTest(TFT_eSPI &tft){
     delay(200);
 
 
+}
+
+/*
+    * Function to change the mood of the eyes
+    * @param mood - Mood to change to
+*/
+void EyesClass::ChangeMood(Mood mood){
+  this->Mood_State = mood;
+}
+
+/*
+    * Function to squint the eyes
+    * @param tft - TFT_eSPI object to draw on
+*/
+void EyesClass::Squint_Eyes(TFT_eSPI &tft){
+  this->ShrinkEye(0, 70, 10, tft);
+}
+
+/*
+    * Function to open the eyes
+    * @param tft - TFT_eSPI object to draw on
+*/
+void EyesClass::OpenEyes(TFT_eSPI &tft){
+  this->ShrinkEye(0, 0, 10, tft);
+}
+
+/*
+    * Function to close the eyes
+    * @param tft - TFT_eSPI object to draw on
+*/
+void EyesClass::CloseEyes(TFT_eSPI &tft){
+  this->ShrinkEye(0, 100, 10, tft);
 }
 
 /*

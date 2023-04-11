@@ -69,9 +69,9 @@ void loop()
     }
   }
 
-    Eyes.CloseEyes(tft);
-    delay(50);
-    Eyes.OpenEyes(tft);
-  delay(50);
+    // Eyes.CloseEyes(tft);
+    // delay(50);
+    // Eyes.OpenEyes(tft);
+  // delay(50);
 }
 

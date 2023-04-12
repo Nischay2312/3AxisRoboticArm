@@ -23,6 +23,7 @@
 #define RECTANGULAR_EYES 1
 #define DRAWIRIS 0
 #define ANIMATION_DELAY 33  //ms
+#define Z_ANIMATION_TIME 500 //ms
 
 #define HAPPY_EYE_RADIUS 4
 #define EYECLEAR_EXTRA 5
@@ -46,26 +47,39 @@ class EyesClass{
     uint16_t Iris2_centerX;
     uint16_t Iris2_centerY;
     uint8_t Mood_State;
+    uint8_t SleepAnimState = 0;
     
     public:
         enum Mood{
       Happy,
       Sad,
       Angry,
-      Neutral
+      Neutral,
+      Sleeping
     };
     void Initialize_Eyes();
-    void EyeTest(TFT_eSPI &tft);
     void ShrinkEye(uint8_t EyeSelect, int16_t Redction_pct, uint16_t Frames, TFT_eSPI &tft);
     void Clear_Eyes(TFT_eSPI &tft);
+    void Clear_Eyes(TFT_eSPI &tft, bool clear_all);
     void Draw_Eyes(TFT_eSPI &tft);
     void Move_Eyes(int Eye1_x, int Eye1_y, int Eye2_x, int Eye2_y);
-    void Move_Eyes(TFT_eSPI &tft, int Eye1_x, int Eye1_y, int Eye2_x, int Eye2_y, uint16_t Frames);
+    void ChangeMood(Mood mood);
+    //Animation Functions -> execute within 1-2 seconds
+    void Blink(TFT_eSPI &tft);
+    void Wink(TFT_eSPI &tft);
     void Squint_Eyes(TFT_eSPI &tft);
     void CloseEyes(TFT_eSPI &tft);
     void OpenEyes(TFT_eSPI &tft);
-    void ChangeMood(Mood mood);
-    
+    void ChangeMoodRandom(TFT_eSPI &tft);
+    void Sleep(TFT_eSPI &tft);
+    void WakeUp(TFT_eSPI &tft);
+    // void EyeWiggle(TFT_eSPI &tft);
+    // void SadLookSide(TFT_eSPI &tft);
+    // void CrazyLook(TFT_eSPI &tft);
+    // void TheRockLook(TFT_eSPI &tft);
+    void Move_Eyes(TFT_eSPI &tft, int Eye1_x, int Eye1_y, int Eye2_x, int Eye2_y, uint16_t Frames);
+    //Test Functions
+    void EyeTest(TFT_eSPI &tft);
 };
 
 #endif

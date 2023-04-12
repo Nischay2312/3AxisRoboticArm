@@ -18,9 +18,9 @@ import serial
 import time
 
 async def receive_images():
-    async with websockets.connect('ws://192.168.1.6:8080') as websocket:
+    async with websockets.connect('ws://192.168.4.1:8080') as websocket:
         while True:
-            # Receive a binary image from the WebSocket server
+            # Receive a binary imagews://192.168.4.1:8080 from the WebSocket server
             img_bytes = await websocket.recv()
 
             # Convert the binary image to a numpy array
@@ -57,8 +57,8 @@ async def Process_image():
         # Update the largest face globalvariable
         largest_face = largest_face_cords
         # # Display the image using OpenCV
-        # cv2.imshow('image', img)
-        # cv2.waitKey(1)
+        cv2.imshow('image', img)
+        cv2.waitKey(1)
 
 def map_range(x, in_min, in_max, out_min, out_max):
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
@@ -86,12 +86,12 @@ async def Send_data():
             center_y = y + h/2
             print("Center of Face: ", center_x, center_y)
         
-        # Map the center to the range 0-255, with 0,0 is 130, 130
-        center_x = map_range(center_x, 0, ImageWidth, 255, 0)
-        center_y = map_range(center_y, 0, ImageHeight, 0, 255)
-        # Send the data to the Robot Eyes
-        OutputString = Header + str(center_x) + "," + str(center_y) + "\n"
-        RobotEye.write(bytes(OutputString, 'utf-8'))
+            # Map the center to the range 0-255, with 0,0 is 130, 130
+            center_x = map_range(center_x, 0, ImageWidth, 255, 0)
+            center_y = map_range(center_y, 0, ImageHeight, 0, 255)
+            # Send the data to the Robot Eyes
+            OutputString = Header + str(center_x) + "," + str(center_y) + "\n"
+            RobotEye.write(bytes(OutputString, 'utf-8'))
         await asyncio.sleep(1/DataSendRate)
 
 
@@ -115,7 +115,7 @@ baudrate = 115200
 bytesize = serial.EIGHTBITS
 parity = serial.PARITY_NONE
 stopbits = serial.STOPBITS_ONE
-DataSendRate = 10 # hz
+DataSendRate = 5 # hz
 Header = "FF,"
 OutputString = ""
 # open the serial port

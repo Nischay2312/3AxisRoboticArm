@@ -1,3 +1,4 @@
+#include "HardwareSerial.h"
 /*
     *  EyesClass.cpp
     *  LCDEyes
@@ -32,9 +33,10 @@ void EyesClass::Initialize_Eyes(){
 }
 
 /*
-    * Function to generate a blink effect
+    * Function to test variety of effects
 */
 void EyesClass::EyeTest(TFT_eSPI &tft){
+/*
 
     //Clear eyes
     this->Clear_Eyes(tft);
@@ -61,7 +63,7 @@ void EyesClass::EyeTest(TFT_eSPI &tft){
     this->ShrinkEye(0, 100, 2, tft);
     delay(100);
     //change mood to Sad
-    this->ChangeMood(Sad);
+    this->ChangeMood(Happy);
     //Now open the eyes
     this->ShrinkEye(0, 60, 2, tft);
     //move the 2nd eye to the left
@@ -74,41 +76,42 @@ void EyesClass::EyeTest(TFT_eSPI &tft){
     this->Move_Eyes(tft, this->Eye1_centerX-10, this->Eye1_centerY-12, this->Eye2_centerX-2, this->Eye2_centerY-5, 4);
     delay(200);
 
-
+*/
+    //this->Clear_Eyes(tft);
+    //this->Wink(tft);
+    //delay(500);
+    //Set the robot to sleep
+    this->Sleep(tft);
+    delay(500);
+    //Wake up the robot
+    this->WakeUp(tft);
+    delay(500);
+    //Wink
+    this->Wink(tft);
+    delay(500);
+    //Close the eyes
+    this->CloseEyes(tft);
+    //Change mood randomly
+    this->ChangeMoodRandom(tft);
+    //this->ChangeMood(Happy);
+    delay(500);
+    //Open the eyes
+    this->OpenEyes(tft);
+    delay(150);
+    this->Wink(tft);
+    delay(500);
+    //Squint the eyess
+    this->Squint_Eyes(tft);
+    delay(500);
 }
 
 /*
-    * Function to change the mood of the eyes
-    * @param mood - Mood to change to
+    * Function to Set the mood of the eyes
+    * @param mood - Mood to set the eyes to
 */
 void EyesClass::ChangeMood(Mood mood){
   this->Mood_State = mood;
 }
-
-/*
-    * Function to squint the eyes
-    * @param tft - TFT_eSPI object to draw on
-*/
-void EyesClass::Squint_Eyes(TFT_eSPI &tft){
-  this->ShrinkEye(0, 70, 6, tft);
-}
-
-/*
-    * Function to open the eyes
-    * @param tft - TFT_eSPI object to draw on
-*/
-void EyesClass::OpenEyes(TFT_eSPI &tft){
-  this->ShrinkEye(0, 0, 3, tft);
-}
-
-/*
-    * Function to close the eyes
-    * @param tft - TFT_eSPI object to draw on
-*/
-void EyesClass::CloseEyes(TFT_eSPI &tft){
-  this->ShrinkEye(0, 100, 3, tft);
-}
-
 /*
     * Function to animate chagnging the size of Eye.
     * @param EyeSelect - 1 for left eye, 2 for right eye, 0 for both eyes
@@ -168,6 +171,21 @@ void EyesClass::Clear_Eyes(TFT_eSPI &tft){
 }
 
 /*
+    * Clear the eye place
+    * @param tft - TFT_eSPI object to draw on
+    * @param clear_all - If true, then clear the entire EYE_AREA
+*/
+void EyesClass::Clear_Eyes(TFT_eSPI &tft, bool clear_all){
+    if(clear_all){
+        tft.fillRect(this->Eye1_centerX - EYE_WIDTH/2, this->Eye1_centerY - EYE_HEIGHT, EYE_WIDTH, EYE_HEIGHT, BG_COLOR);
+        tft.fillRect(this->Eye2_centerX - EYE_WIDTH/2, this->Eye2_centerY - EYE_HEIGHT, EYE_WIDTH, EYE_HEIGHT, BG_COLOR);
+    }
+    else{
+        this->Clear_Eyes(tft);
+    }
+}
+
+/*
     * Draw the eyes
     * @param tft - TFT_eSPI object to draw on
 */
@@ -207,6 +225,9 @@ void EyesClass::Draw_Eyes(TFT_eSPI &tft){
             //This is simple, make an inverted triangle starting on the top left corner
             tft.fillTriangle(this->Eye1_centerX - this->Eye1_Current_Width, this->Eye1_centerY - this->Eye1_Current_Height, this->Eye1_centerX + this->Eye1_Current_Width, this->Eye1_centerY - this->Eye1_Current_Height, this->Eye1_centerX + this->Eye1_Current_Width, this->Eye1_centerY, BG_COLOR);
             break;
+        case Sleeping:
+            //If the robot is sleeping then draw two super thin rectangles at each eye
+            tft.fillRect(this->Eye1_centerX - this->Eye1_Current_Width, this->Eye1_centerY - this->Eye1_Current_Height, this->Eye1_Current_Width*2, 3, this->Eye_Color);             
         default:
             break;
     }
@@ -228,7 +249,7 @@ void EyesClass::Draw_Eyes(TFT_eSPI &tft){
     if(DRAWIRIS){
         tft.fillCircle(this->Iris2_centerX, this->Iris2_centerY, this->Iris_radius, this->Iris_Color);
     }
-
+    
     //Draw the expression based on the mood state
     switch(this->Mood_State){
         case Happy:
@@ -248,10 +269,47 @@ void EyesClass::Draw_Eyes(TFT_eSPI &tft){
             //Same a eye 1 angry but sides flipped
             tft.fillTriangle(this->Eye2_centerX + this->Eye2_Current_Width, this->Eye2_centerY - this->Eye2_Current_Height, this->Eye2_centerX - this->Eye2_Current_Width, this->Eye2_centerY - this->Eye2_Current_Height, this->Eye2_centerX - this->Eye2_Current_Width, this->Eye2_centerY, BG_COLOR);
             break;
+        case Sleeping:
+            //If the robot is sleeping then draw two super thin rectangles at each eye, and some Z's on top of the right eye
+            tft.fillRect(this->Eye2_centerX - this->Eye2_Current_Width, this->Eye2_centerY - this->Eye2_Current_Height, this->Eye2_Current_Width*2, 3, this->Eye_Color);
+
+            switch (this->SleepAnimState){
+                case 1:
+                    tft.drawChar(this->Eye2_centerX + EYE_WIDTH/2, this->Eye2_centerY - EYE_HEIGHT/2, 'z', this->Eye_Color, BG_COLOR, 1);
+                    this->SleepAnimState++;
+                    break;
+                case 2:
+                    //Clean the last Z
+                    tft.drawChar(this->Eye2_centerX + EYE_WIDTH/2+6, this->Eye2_centerY - EYE_HEIGHT/2 - 6, 'z', this->Eye_Color, BG_COLOR, 1);
+                    this->SleepAnimState++;
+                    break;
+                case 3:
+                    //Clean the last Z
+                    tft.drawChar(this->Eye2_centerX + EYE_WIDTH/2+12, this->Eye2_centerY - EYE_HEIGHT/2 - 12, 'z', this->Eye_Color, BG_COLOR, 1);
+                    this->SleepAnimState++;
+                    break;
+                case 0:
+                    //Just clean all the Z
+                    tft.fillRect(this->Eye2_centerX + EYE_WIDTH/2, this->Eye2_centerY - EYE_HEIGHT/2, 5, 7, BG_COLOR);
+                    tft.fillRect(this->Eye2_centerX + EYE_WIDTH/2+6, this->Eye2_centerY - EYE_HEIGHT/2-6, 5, 7, BG_COLOR);
+                    tft.fillRect(this->Eye2_centerX + EYE_WIDTH/2+12, this->Eye2_centerY - EYE_HEIGHT/2-12, 5, 7, BG_COLOR);
+                    this->SleepAnimState = 1;
+                    break;
+                default:
+                    this->SleepAnimState = 0;
+            }
         default:
             break;
     }
   }
+  //If in case the state is not sleeping and sleepanimstate is not 0 then reset it and clear the Z's
+  if(this->Mood_State != Sleeping && this->SleepAnimState != 1){
+        this->SleepAnimState = 1;
+        //Just clean all the Z
+        tft.fillRect(this->Eye2_centerX + EYE_WIDTH/2, this->Eye2_centerY - EYE_HEIGHT/2, 5, 7, BG_COLOR);
+        tft.fillRect(this->Eye2_centerX + EYE_WIDTH/2+6, this->Eye2_centerY - EYE_HEIGHT/2-6, 5, 7, BG_COLOR);
+        tft.fillRect(this->Eye2_centerX + EYE_WIDTH/2+12, this->Eye2_centerY - EYE_HEIGHT/2-12, 5, 7, BG_COLOR);
+    }
 }
 
 /*
@@ -295,6 +353,114 @@ void EyesClass::Move_Eyes(TFT_eSPI &tft, int Eye1_x, int Eye1_y, int Eye2_x, int
     this->Draw_Eyes(tft);
     delay(ANIMATION_DELAY);
 }
+
+// Animation Functions
+/*
+    * Function to blink the eyes
+    * @param tft - TFT_eSPI object to draw on
+*/
+void EyesClass::Blink(TFT_eSPI &tft){
+    //close the eyes
+    this->CloseEyes(tft);
+    delay(180);
+    //open the eyes
+    this->OpenEyes(tft);
+    delay(20);
+}
+
+/*
+    * Function to wink the eyes
+    * @param tft - TFT_eSPI object to draw on
+*/
+void EyesClass::Wink(TFT_eSPI &tft){
+    //select a random eye to wink
+    int Eye = random(1, 3);
+    //shrink the eye
+    this->ShrinkEye(Eye, 100, 3, tft);
+    delay(20);
+    //open the eye
+    this->ShrinkEye(Eye, 0, 3, tft);
+}
+
+/*
+    * Function to squint the eyes
+    * @param tft - TFT_eSPI object to draw on
+*/
+void EyesClass::Squint_Eyes(TFT_eSPI &tft){
+  this->ShrinkEye(0, 70, 6, tft);
+}
+/*
+    * Function to close the eyes
+    * @param tft - TFT_eSPI object to draw on
+*/
+void EyesClass::CloseEyes(TFT_eSPI &tft){
+  this->ShrinkEye(0, 100, 3, tft);
+}
+/*
+    * Function to open the eyes
+    * @param tft - TFT_eSPI object to draw on
+*/
+void EyesClass::OpenEyes(TFT_eSPI &tft){
+  this->ShrinkEye(0, 0, 3, tft);
+}
+/*
+    * Function to randomly change the mood of the eyes, and then display the eyes.
+    * @param tft - TFT_eSPI object to draw on
+*/
+void EyesClass::ChangeMoodRandom(TFT_eSPI &tft){
+    //define the number of moods based on the length of the enum
+    int MoodCount = this->Neutral - this->Happy + 1; 
+    int mood = random(0, MoodCount);
+    Mood Moodenum = static_cast<Mood>(Happy + mood);
+    //change the mood
+    this->ChangeMood(Moodenum);
+    //Now display the eyes
+    this->Draw_Eyes(tft);
+}
+/*
+    * Function to make the robot go to sleep
+    * @param tft - TFT_eSPI object to draw on
+*/
+void EyesClass::Sleep(TFT_eSPI &tft){
+    //Slowly make the eyes smaller
+    this->ShrinkEye(0, 50, 5, tft);
+    this->ShrinkEye(0, 80, 8, tft);
+    delay(100);
+    this->ShrinkEye(0,90, 5, tft);
+    //clear the eyes
+    this->Clear_Eyes(tft, 1);
+    this->ChangeMood(this->Sleeping);
+    this->Draw_Eyes(tft);
+    delay(150);
+    this->Draw_Eyes(tft);
+    delay(150);
+    this->Draw_Eyes(tft);
+    delay(150);
+    this->Draw_Eyes(tft);
+    delay(150);
+
+}
+/*
+    * Function to make the robot wake up
+    * @param tft - TFT_eSPI object to draw on
+*/
+void EyesClass::WakeUp(TFT_eSPI &tft){
+    //Change the mood to neutral
+    this->ChangeMood(this->Neutral);
+    //Quickly Make the eyes bigger than normal
+    this->ShrinkEye(0, -30, 3, tft);
+    //delay(50);
+    //Slowly make the eyes normal size
+    this->ShrinkEye(0, 30, 6, tft);
+    //Open the eye
+    this->OpenEyes(tft);
+    delay(50);
+}
+//void EyeWiggle(TFT_eSPI &tft);
+//void SadLookSide(TFT_eSPI &tft);
+//void CrazyLook(TFT_eSPI &tft);
+//void TheRockLook(TFT_eSPI &tft);
+
 
 
 /*

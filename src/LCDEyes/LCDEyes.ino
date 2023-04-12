@@ -22,6 +22,7 @@
 TFT_eSPI tft = TFT_eSPI();  
 EyesClass Eyes;
 
+unsigned long UARTReciveTime = 0; 
 
 void setup()
 {
@@ -34,6 +35,7 @@ void setup()
   tft.fillScreen(BG_COLOR);
   Eyes.Initialize_Eyes();
   //Eyes.EyeTest(tft);
+  UARTReciveTime = millis();
   Serial.println("Setup Routine Done");
 }
 
@@ -42,6 +44,7 @@ void loop()
 {
   //Read Serial Input
   while(Serial.available()){
+    UARTReciveTime = millis();
     //Read Serial Input
     String SerialData = Serial.readStringUntil('\n');
     //Echo Serial Input
@@ -67,6 +70,9 @@ void loop()
         Serial.read();
       }
     }
+  }
+  if(millis() - UARTReciveTime > 5){
+    Eyes.EyeTest(tft);
   }
 
     // Eyes.CloseEyes(tft);

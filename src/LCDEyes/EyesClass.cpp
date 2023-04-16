@@ -190,6 +190,8 @@ void EyesClass::Clear_Eyes(TFT_eSPI &tft, bool clear_all){
     * @param tft - TFT_eSPI object to draw on
 */
 void EyesClass::Draw_Eyes(TFT_eSPI &tft){
+  tft.startWrite();
+  
   //If the Eye width/hieghts are 0, then just make a black box to clear the eyes
   if(this->Eye1_Current_Width == 0 || this->Eye1_Current_Height == 0){
       tft.fillRect(this->Eye1_centerX - EYE_WIDTH/2, this->Eye1_centerY - EYE_HEIGHT, EYE_WIDTH, EYE_HEIGHT, BG_COLOR);
@@ -310,6 +312,7 @@ void EyesClass::Draw_Eyes(TFT_eSPI &tft){
         tft.fillRect(this->Eye2_centerX + EYE_WIDTH/2+6, this->Eye2_centerY - EYE_HEIGHT/2-6, 5, 7, BG_COLOR);
         tft.fillRect(this->Eye2_centerX + EYE_WIDTH/2+12, this->Eye2_centerY - EYE_HEIGHT/2-12, 5, 7, BG_COLOR);
     }
+  tft.endWrite();
 }
 
 /*

@@ -18,7 +18,7 @@
 #define EYE_HEIGHT 40
 #define IRIS_RADIUS 3
 #define BG_COLOR TFT_BLACK
-#define EYE_COLOR TFT_WHITE
+#define EYE_COLOR TFT_GOLD
 #define IRIS_COLOR TFT_BLUE
 #define RECTANGULAR_EYES 1
 #define DRAWIRIS 0
@@ -50,7 +50,7 @@ class EyesClass{
     uint8_t SleepAnimState = 0;
     
     public:
-        enum Mood{
+    enum Mood{
       Happy,
       Sad,
       Angry,

@@ -18,13 +18,14 @@
 #define EYE_HEIGHT 40
 #define IRIS_RADIUS 3
 #define BG_COLOR TFT_BLACK
-#define EYE_COLOR TFT_GOLD
+#define EYE_COLOR TFT_WHITE
 #define IRIS_COLOR TFT_BLUE
 #define RECTANGULAR_EYES 1
 #define DRAWIRIS 0
 #define ANIMATION_DELAY 33  //ms
 #define Z_ANIMATION_TIME 500 //ms
 
+#define HAPPY_EYE_TYPE 0        //0 = Inverted V, 1 = Inverted Circular
 #define HAPPY_EYE_RADIUS 4
 #define EYECLEAR_EXTRA 5
 
@@ -73,10 +74,10 @@ class EyesClass{
     void ChangeMoodRandom(TFT_eSPI &tft);
     void Sleep(TFT_eSPI &tft);
     void WakeUp(TFT_eSPI &tft);
-    // void EyeWiggle(TFT_eSPI &tft);
+    void EyeWiggle(TFT_eSPI &tft);
     // void SadLookSide(TFT_eSPI &tft);
     // void CrazyLook(TFT_eSPI &tft);
-    // void TheRockLook(TFT_eSPI &tft);
+    void TheRockLook(TFT_eSPI &tft);
     void Move_Eyes(TFT_eSPI &tft, int Eye1_x, int Eye1_y, int Eye2_x, int Eye2_y, uint16_t Frames);
     //Test Functions
     void EyeTest(TFT_eSPI &tft);

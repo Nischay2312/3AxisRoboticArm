@@ -103,6 +103,15 @@ void EyesClass::EyeTest(TFT_eSPI &tft){
     //Squint the eyess
     this->Squint_Eyes(tft);
     delay(500);
+    //Open the eyes
+    this->OpenEyes(tft);  
+    delay(250); 
+    //wiggle the eyes
+    this->EyeWiggle(tft);
+    delay(500);
+    //the rock effect
+    this->TheRockLook(tft);
+    delay(500);
 }
 
 /*
@@ -212,12 +221,23 @@ void EyesClass::Draw_Eyes(TFT_eSPI &tft){
     //Draw the expression based on the mood state
     switch(this->Mood_State){
         case Happy:
-            //First cut the bottom of the eye
-            tft.fillRect(this->Eye1_centerX - this->Eye1_Current_Width, this->Eye1_centerY, this->Eye1_Current_Width*2, this->Eye1_Current_Height, BG_COLOR);
-            //Draw the happy expression
-            tft.fillRoundRect(this->Eye1_centerX - this->Eye1_Current_Width, this->Eye1_centerY - this->Eye1_Current_Height - HAPPY_EYE_RADIUS, this->Eye1_Current_Width*2, this->Eye1_Current_Height/2, HAPPY_EYE_RADIUS, this->Eye_Color);
-            //make a black box to clear the bottom of the eye
-            tft.fillEllipse(this->Eye1_centerX-HAPPY_EYE_RADIUS, this->Eye1_centerY+this->Eye1_Current_Height/2, this->Eye1_Current_Width, this->Eye1_Current_Height+3, BG_COLOR);
+            if(HAPPY_EYE_TYPE){
+                //First cut the bottom of the eye
+                tft.fillRect(this->Eye1_centerX - this->Eye1_Current_Width, this->Eye1_centerY, this->Eye1_Current_Width*2, this->Eye1_Current_Height, BG_COLOR);
+                //Draw the happy expression
+                tft.fillRoundRect(this->Eye1_centerX - this->Eye1_Current_Width, this->Eye1_centerY - this->Eye1_Current_Height - HAPPY_EYE_RADIUS, this->Eye1_Current_Width*2, this->Eye1_Current_Height/2, HAPPY_EYE_RADIUS, this->Eye_Color);
+                //make a black box to clear the bottom of the eye
+                tft.fillEllipse(this->Eye1_centerX-HAPPY_EYE_RADIUS, this->Eye1_centerY+this->Eye1_Current_Height/2, this->Eye1_Current_Width, this->Eye1_Current_Height+3, BG_COLOR);
+            }
+            else{
+                //First cut the bottom of the eye
+                tft.fillRect(this->Eye1_centerX - this->Eye1_Current_Width, this->Eye1_centerY, this->Eye1_Current_Width*2, this->Eye1_Current_Height, BG_COLOR);
+                //Draw a trangle in the middle of the remaining top part of EYE.
+                tft.fillTriangle(this->Eye1_centerX - this->Eye1_Current_Width*2/3, this->Eye1_centerY, this->Eye1_centerX, this->Eye1_centerY - this->Eye1_Current_Height*2/3, this->Eye1_centerX + this->Eye1_Current_Width*2/3, this->Eye1_centerY, BG_COLOR);
+                //Now draw two traingles of BG color at the top left and right corners
+                tft.fillTriangle(this->Eye1_centerX - this->Eye1_Current_Width, this->Eye1_centerY, this->Eye1_centerX - this->Eye1_Current_Width, this->Eye1_centerY - this->Eye1_Current_Height, this->Eye1_centerX, this->Eye1_centerY - this->Eye1_Current_Height, BG_COLOR);
+                tft.fillTriangle(this->Eye1_centerX + this->Eye1_Current_Width, this->Eye1_centerY, this->Eye1_centerX + this->Eye1_Current_Width, this->Eye1_centerY - this->Eye1_Current_Height, this->Eye1_centerX, this->Eye1_centerY - this->Eye1_Current_Height, BG_COLOR);
+            }
             break;
         case Sad:
             //Draw the sad expression, a simple inverted triangle
@@ -255,13 +275,23 @@ void EyesClass::Draw_Eyes(TFT_eSPI &tft){
     //Draw the expression based on the mood state
     switch(this->Mood_State){
         case Happy:
-            //First cut the bottom of the eye
-            tft.fillRect(this->Eye2_centerX - this->Eye2_Current_Width, this->Eye2_centerY, this->Eye2_Current_Width*2, this->Eye2_Current_Height, BG_COLOR);
-            //Draw the happy expression
-            tft.fillRoundRect(this->Eye2_centerX - this->Eye2_Current_Width, this->Eye2_centerY - this->Eye2_Current_Height - HAPPY_EYE_RADIUS, this->Eye2_Current_Width*2, this->Eye2_Current_Height/2, HAPPY_EYE_RADIUS, this->Eye_Color);
-            //make a black box to clear the bottom of the eye
-            tft.fillEllipse(this->Eye2_centerX+HAPPY_EYE_RADIUS, this->Eye2_centerY+this->Eye2_Current_Height/2, this->Eye2_Current_Width, this->Eye2_Current_Height+3, BG_COLOR);
-
+            if(HAPPY_EYE_TYPE){
+                //First cut the bottom of the eye
+                tft.fillRect(this->Eye2_centerX - this->Eye2_Current_Width, this->Eye2_centerY, this->Eye2_Current_Width*2, this->Eye2_Current_Height, BG_COLOR);
+                //Draw the happy expression
+                tft.fillRoundRect(this->Eye2_centerX - this->Eye2_Current_Width, this->Eye2_centerY - this->Eye2_Current_Height - HAPPY_EYE_RADIUS, this->Eye2_Current_Width*2, this->Eye2_Current_Height/2, HAPPY_EYE_RADIUS, this->Eye_Color);
+                //make a black box to clear the bottom of the eye
+                tft.fillEllipse(this->Eye2_centerX+HAPPY_EYE_RADIUS, this->Eye2_centerY+this->Eye2_Current_Height/2, this->Eye2_Current_Width, this->Eye2_Current_Height+3, BG_COLOR);
+            }
+            else{
+                //First cut the bottom of the eye
+                tft.fillRect(this->Eye2_centerX - this->Eye2_Current_Width, this->Eye2_centerY, this->Eye2_Current_Width*2, this->Eye2_Current_Height, BG_COLOR);
+                //Draw a trangle in the middle of the remaining top part of EYE.
+                tft.fillTriangle(this->Eye2_centerX - this->Eye2_Current_Width*2/3, this->Eye2_centerY, this->Eye2_centerX, this->Eye2_centerY - this->Eye2_Current_Height*2/3, this->Eye2_centerX + this->Eye2_Current_Width*2/3, this->Eye2_centerY, BG_COLOR);
+                //Now draw two traingles of BG color at the top left and right corners
+                tft.fillTriangle(this->Eye2_centerX - this->Eye2_Current_Width, this->Eye2_centerY, this->Eye2_centerX - this->Eye2_Current_Width, this->Eye2_centerY - this->Eye2_Current_Height, this->Eye2_centerX, this->Eye2_centerY - this->Eye2_Current_Height, BG_COLOR);
+                tft.fillTriangle(this->Eye2_centerX + this->Eye2_Current_Width, this->Eye2_centerY, this->Eye2_centerX + this->Eye2_Current_Width, this->Eye2_centerY - this->Eye2_Current_Height, this->Eye2_centerX, this->Eye2_centerY - this->Eye2_Current_Height, BG_COLOR);
+            }
             break;
         case Sad:
             //Draw the sad expression
@@ -459,10 +489,62 @@ void EyesClass::WakeUp(TFT_eSPI &tft){
     this->OpenEyes(tft);
     delay(50);
 }
-//void EyeWiggle(TFT_eSPI &tft);
+
+/*
+    * Function to wiggle the eyes up and down
+    * @param tft - TFT_eSPI object to draw on
+*/
+void EyesClass::EyeWiggle(TFT_eSPI &tft){
+    //Make both Eyes wiggle
+    //First make both eyes bigger
+    this->ShrinkEye(0, -30, 3, tft);
+    //return the eyes to normal size
+    this->ShrinkEye(0, 0, 3, tft);
+    //Make the eyes bigger again
+    this->ShrinkEye(0, -30, 3, tft);
+    //return the eyes to normal size
+    this->ShrinkEye(0, 0, 3, tft);
+}
 //void SadLookSide(TFT_eSPI &tft);
 //void CrazyLook(TFT_eSPI &tft);
-//void TheRockLook(TFT_eSPI &tft);
+/*
+    * Function to make the robot Eyes make the Dwane Johnson "The Rock" look
+    * @param tft - TFT_eSPI object to draw on
+*/
+void EyesClass::TheRockLook(TFT_eSPI &tft){
+    //First make both eyes small about half and slowly
+    this->ShrinkEye(0, 50, 12, tft);
+    //Now make only one Eye Big
+    int Eye = random(1, 3);
+    this->ShrinkEye(Eye, -40, 4, tft);
+    delay(100);
+    // //move the selected upwards
+    // if(Eye == 1){   //move the 1st eye
+    // //save the current center of the eye
+    // int EyeX = this->Eye1_centerX;
+    // int EyeY = this->Eye1_centerY;
+    //     for(int i = 0; i < 5; i++){
+    //         this->ShrinkEye(Eye, 0-(6*i), 4, tft);
+    //         this->Move_Eyes(tft, this->Eye1_centerX, this->Eye1_centerY-i, this->Eye2_centerX, this->Eye2_centerY, 2);
+    //     }
+    // //Go back to normal
+    // this->Move_Eyes(tft, EyeX, EyeY, this->Eye2_centerX, this->Eye2_centerY, 2);
+    // this->ShrinkEye(Eye, 0, 2, tft);
+    // }
+    // else{   //move the 2nd eye
+    // //save the current center of the eye
+    // int EyeX = this->Eye2_centerX;
+    // int EyeY = this->Eye2_centerY;
+    //     for(int i = 0; i < 5; i++){
+    //         this->ShrinkEye(Eye, 0-(6*i), 4, tft);
+    //         this->Move_Eyes(tft, this->Eye1_centerX, this->Eye1_centerY, this->Eye2_centerX, this->Eye2_centerY-i, 2);
+    //     }
+    // //Go back to normal
+    // this->Move_Eyes(tft, this->Eye1_centerX, this->Eye1_centerY, EyeX, EyeY, 2);
+    // this->ShrinkEye(Eye, 0, 2, tft);
+    // }
+    //delay(100);
+}
 
 
 

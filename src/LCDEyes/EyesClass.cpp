@@ -83,7 +83,7 @@ void EyesClass::EyeTest(TFT_eSPI &tft){
     //Set the robot to sleep
     this->Sleep(tft);
     delay(500);
-    //Wake up the robot
+    // //Wake up the robot
     this->WakeUp(tft);
     delay(500);
     //Wink
@@ -111,6 +111,8 @@ void EyesClass::EyeTest(TFT_eSPI &tft){
     delay(500);
     //the rock effect
     this->TheRockLook(tft);
+    //Sad look side
+    this->SadLookSide(tft);
     delay(500);
 }
 
@@ -505,7 +507,35 @@ void EyesClass::EyeWiggle(TFT_eSPI &tft){
     //return the eyes to normal size
     this->ShrinkEye(0, 0, 3, tft);
 }
-//void SadLookSide(TFT_eSPI &tft);
+
+/*
+    * Function to animate a sad eye roll to the left
+    * @param tft - TFT_eSPI object to draw on 
+*/
+void EyesClass::SadLookSide(TFT_eSPI &tft){
+    //Change the mood to sad
+    this->ChangeMood(this->Sad);
+    //Store the current eye position
+    int Eye1_x = this->Eye1_centerX;
+    int Eye1_y = this->Eye1_centerY;
+    int Eye2_x = this->Eye2_centerX;
+    int Eye2_y = this->Eye2_centerY;
+    //Move the eyes to the left
+    this->Move_Eyes(tft, this->Eye1_centerX + 8, this->Eye1_centerY - 8, this->Eye2_centerX + 8, this->Eye2_centerY - 8, 5);
+    this->Move_Eyes(tft, this->Eye1_centerX + 7, this->Eye1_centerY + 5, this->Eye2_centerX + 7, this->Eye2_centerY + 5, 4);
+    this->Move_Eyes(tft, this->Eye1_centerX + 6, this->Eye1_centerY + 7, this->Eye2_centerX + 6, this->Eye2_centerY + 7, 4);
+    this->Move_Eyes(tft, this->Eye1_centerX + 3, this->Eye1_centerY + 11, this->Eye2_centerX + 3, this->Eye2_centerY + 11, 3);
+    //shrink the eyes
+    this->ShrinkEye(0, 50, 6, tft);
+    delay(1200);
+    //Move the eyes back to the center
+    this->Move_Eyes(tft, Eye1_x, Eye1_y, Eye2_x, Eye2_y, 4);
+    this->ChangeMood(this->Neutral);
+    this->Clear_Eyes(tft, 1);
+    this->Draw_Eyes(tft);
+
+}
+
 //void CrazyLook(TFT_eSPI &tft);
 /*
     * Function to make the robot Eyes make the Dwane Johnson "The Rock" look
@@ -513,37 +543,67 @@ void EyesClass::EyeWiggle(TFT_eSPI &tft){
 */
 void EyesClass::TheRockLook(TFT_eSPI &tft){
     //First make both eyes small about half and slowly
+    //record the current mood
+    int CurrentMood = this->Mood_State;
+    Mood Moodenum = static_cast<Mood>(Happy + CurrentMood);
+    //Change mood to angry
+    this->ChangeMood(this->Angry);
+    this->Draw_Eyes(tft);
+    delay(500);
     this->ShrinkEye(0, 50, 12, tft);
     //Now make only one Eye Big
     int Eye = random(1, 3);
     this->ShrinkEye(Eye, -40, 4, tft);
-    delay(100);
-    // //move the selected upwards
-    // if(Eye == 1){   //move the 1st eye
-    // //save the current center of the eye
-    // int EyeX = this->Eye1_centerX;
-    // int EyeY = this->Eye1_centerY;
-    //     for(int i = 0; i < 5; i++){
-    //         this->ShrinkEye(Eye, 0-(6*i), 4, tft);
-    //         this->Move_Eyes(tft, this->Eye1_centerX, this->Eye1_centerY-i, this->Eye2_centerX, this->Eye2_centerY, 2);
-    //     }
-    // //Go back to normal
-    // this->Move_Eyes(tft, EyeX, EyeY, this->Eye2_centerX, this->Eye2_centerY, 2);
-    // this->ShrinkEye(Eye, 0, 2, tft);
-    // }
-    // else{   //move the 2nd eye
-    // //save the current center of the eye
-    // int EyeX = this->Eye2_centerX;
-    // int EyeY = this->Eye2_centerY;
-    //     for(int i = 0; i < 5; i++){
-    //         this->ShrinkEye(Eye, 0-(6*i), 4, tft);
-    //         this->Move_Eyes(tft, this->Eye1_centerX, this->Eye1_centerY, this->Eye2_centerX, this->Eye2_centerY-i, 2);
-    //     }
-    // //Go back to normal
-    // this->Move_Eyes(tft, this->Eye1_centerX, this->Eye1_centerY, EyeX, EyeY, 2);
-    // this->ShrinkEye(Eye, 0, 2, tft);
-    // }
-    //delay(100);
+    delay(800);
+    //Revert to the previous mood
+    this->ShrinkEye(0, 0, 4, tft);
+    delay(500);
+    this->ChangeMood(Moodenum);
+}
+
+/*
+    * Function to call a random function from the list of functions
+    * @param tft - TFT_eSPI object to draw on
+*/
+void EyesClass::DoSomething(TFT_eSPI &tft){
+  
+  //check if the eyes is sleeping
+    if(this->Mood_State == this->Sleeping){
+        //if the eyes are sleeping then wake them up
+        //select randomly to either continue sleeping or wake up
+        int WakeUp = random(0, 2);  
+        if(WakeUp == 1){
+            //wake up
+            this->WakeUp(tft);
+        }
+        else{
+            //continue sleeping
+            this->Draw_Eyes(tft);        
+        }
+        return;
+    }
+        //List of functions to choose from
+  
+  //Functions to choose from
+    void (EyesClass::*Functions[])(TFT_eSPI &tft) = {
+        &EyesClass::Blink,
+        &EyesClass::Wink,
+        &EyesClass::Squint_Eyes,
+        &EyesClass::CloseEyes,
+        &EyesClass::OpenEyes,
+        &EyesClass::ChangeMoodRandom,
+        &EyesClass::Sleep,
+        &EyesClass::WakeUp,
+        &EyesClass::EyeWiggle,
+        &EyesClass::SadLookSide,
+        // void CrazyLook(TFT_eSPI &tft);
+        &EyesClass::TheRockLook,
+        };
+
+    //Choose a random function, get the size of the array and then get a random number between 0 and the size of the array
+    int Function = random(0, sizeof(Functions)/sizeof(Functions[0]));
+    //Call the function
+    (this->*Functions[Function])(tft);
 }
 
 

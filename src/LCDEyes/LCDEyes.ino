@@ -24,11 +24,14 @@ EyesClass Eyes;
 
 unsigned long UARTReciveTime = 0; 
 
+String ReadSerial();
+
 void setup()
 {
   Serial.begin(115200);
   while(!Serial);
   Serial.println("Serial Setup Done");
+  randomSeed(analogRead(0));
   tft.init();            // initialize LCD
   tft.setRotation(1);
   //We want black background
@@ -43,7 +46,7 @@ void setup()
 void loop()
 {
   //Read Serial Input
-  while(Serial.available()){
+  if(Serial.available()){
     UARTReciveTime = millis();
     //Read Serial Input
     String SerialData = Serial.readStringUntil('\n');
@@ -71,13 +74,15 @@ void loop()
       }
     }
   }
-  if(millis() - UARTReciveTime > 5){
-    Eyes.EyeTest(tft);
+  if(millis() - UARTReciveTime > 5000){
+    //Eyes.EyeTest(tft);
+    Eyes.DoSomething(tft);
+    delay(500);
   }
+  
+}
 
-    // Eyes.CloseEyes(tft);
-    // delay(50);
-    // Eyes.OpenEyes(tft);
-  // delay(50);
+String ReadSerial(){
+  
 }
 

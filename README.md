@@ -1,2 +1,3 @@
-# 3AxisRoboticArm
-Repository for the 3 Axis Robotic Arm
+# RoboticArm
+Repository for the Robotic Arm Controllers
+

@@ -480,8 +480,10 @@ void EyesClass::Sleep(TFT_eSPI &tft){
     * @param tft - TFT_eSPI object to draw on
 */
 void EyesClass::WakeUp(TFT_eSPI &tft){
-    //Change the mood to neutral
-    this->ChangeMood(this->Neutral);
+    //Change the mood to neutral if sleeping
+    if(this->Mood_State == this->Sleeping){  
+      this->ChangeMood(this->Neutral);
+    }
     //Quickly Make the eyes bigger than normal
     this->ShrinkEye(0, -30, 3, tft);
     //delay(50);
@@ -538,6 +540,47 @@ void EyesClass::SadLookSide(TFT_eSPI &tft){
 
 //void CrazyLook(TFT_eSPI &tft);
 /*
+    * Function to move the eyes all around the frame
+    * @param tft - TFT_eSPI object to draw on
+*/
+void EyesClass::LookAround(TFT_eSPI &tft){
+    //Move the eyes to the four corners and then back to the original position.
+    //Store the current eye position
+    int Eye1_x = this->Eye1_centerX;
+    int Eye1_y = this->Eye1_centerY;
+    int Eye2_x = this->Eye2_centerX;
+    int Eye2_y = this->Eye2_centerY;
+    int holdDelay  = 150;
+    int movedist = 20;
+    //Move the eyes to the left
+    this->ShrinkEye(2, -40, 2, tft);
+    this->Move_Eyes(tft, this->Eye1_centerX + movedist, this->Eye1_centerY - movedist, this->Eye2_centerX + movedist, this->Eye2_centerY - movedist, 3);
+    delay(holdDelay);
+    //this->Move_Eyes(tft, this->Eye1_centerX - 10, this->Eye1_centerY +10, this->Eye2_centerX -10 , this->Eye2_centerY + 10, 2);
+    delay(holdDelay/10);
+    this->ShrinkEye(2, 0, 2, tft);
+    this->ShrinkEye(1, -40, 2, tft);
+    this->Move_Eyes(tft, this->Eye1_centerX - 2*movedist, this->Eye1_centerY - movedist*0, this->Eye2_centerX - 2*movedist, this->Eye2_centerY - 0*movedist, 3);
+    delay(holdDelay);
+    //this->Move_Eyes(tft, this->Eye1_centerX + 10, this->Eye1_centerY + 10, this->Eye2_centerX + 10 , this->Eye2_centerY + 10, 2);
+    delay(holdDelay/10);
+    this->ShrinkEye(1, 0, 2, tft);
+    this->ShrinkEye(2, -40, 2, tft);
+    this->Move_Eyes(tft, this->Eye1_centerX + 2*movedist, this->Eye1_centerY + 2*movedist, this->Eye2_centerX + 2*movedist, this->Eye2_centerY + 2*movedist, 3);
+    delay(holdDelay);
+    //this->Move_Eyes(tft, this->Eye1_centerX + 10, this->Eye1_centerY - 10, this->Eye2_centerX + 10 , this->Eye2_centerY - 10, 2);
+    delay(holdDelay/10);
+    this->ShrinkEye(2, 0, 2, tft);
+    this->ShrinkEye(1, -40, 2, tft);
+    this->Move_Eyes(tft, this->Eye1_centerX - 2*movedist, this->Eye1_centerY + movedist*0, this->Eye2_centerX - 2*movedist, this->Eye2_centerY + movedist*0, 3);
+    delay(holdDelay);
+    //this->Move_Eyes(tft, this->Eye1_centerX - 10, this->Eye1_centerY - 10, this->Eye2_centerX - 10 , this->Eye2_centerY - 10, 2);
+    delay(holdDelay/10);
+    this->ShrinkEye(0, 0, 2, tft);
+    //Move the eyes back to the center
+    this->Move_Eyes(tft, Eye1_x, Eye1_y, Eye2_x, Eye2_y, 2);
+}
+/*
     * Function to make the robot Eyes make the Dwane Johnson "The Rock" look
     * @param tft - TFT_eSPI object to draw on
 */
@@ -571,7 +614,7 @@ void EyesClass::DoSomething(TFT_eSPI &tft){
     if(this->Mood_State == this->Sleeping){
         //if the eyes are sleeping then wake them up
         //select randomly to either continue sleeping or wake up
-        int WakeUp = random(0, 2);  
+        int WakeUp = random(0, 10);  
         if(WakeUp == 1){
             //wake up
             this->WakeUp(tft);
@@ -598,6 +641,7 @@ void EyesClass::DoSomething(TFT_eSPI &tft){
         &EyesClass::SadLookSide,
         // void CrazyLook(TFT_eSPI &tft);
         &EyesClass::TheRockLook,
+        &EyesClass::LookAround
         };
 
     //Choose a random function, get the size of the array and then get a random number between 0 and the size of the array

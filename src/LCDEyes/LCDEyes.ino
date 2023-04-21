@@ -21,10 +21,9 @@
 
 TFT_eSPI tft = TFT_eSPI();  
 EyesClass Eyes;
+bool following = false;
 
 unsigned long UARTReciveTime = 0; 
-
-String ReadSerial();
 
 void setup()
 {
@@ -40,6 +39,8 @@ void setup()
   //Eyes.EyeTest(tft);
   UARTReciveTime = millis();
   Serial.println("Setup Routine Done");
+  Eyes.WakeUp(tft);
+  Eyes.LookAround(tft);
 }
 
 
@@ -67,6 +68,10 @@ void loop()
       int Eye2FinalY = map(Y, 0, 255, 24, 104);
 
       //Set the X and Y values
+      if(!following){
+        Eyes.WakeUp(tft);
+        following = true;
+      }      
       Eyes.Move_Eyes(tft, Eye1FinalX, Eye1FinalY, Eye2FinalX, Eye2FinalY, 4);
       //Clear the Serial Buffer
       while(Serial.available()){
@@ -76,13 +81,11 @@ void loop()
   }
   if(millis() - UARTReciveTime > 5000){
     //Eyes.EyeTest(tft);
+    following = false;
     Eyes.DoSomething(tft);
     delay(500);
   }
   
 }
 
-String ReadSerial(){
-  
-}
 

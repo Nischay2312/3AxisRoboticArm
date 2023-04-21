@@ -78,6 +78,7 @@ class EyesClass{
     void SadLookSide(TFT_eSPI &tft);
     // void CrazyLook(TFT_eSPI &tft);
     void TheRockLook(TFT_eSPI &tft);
+    void LookAround(TFT_eSPI &tft);
     void Move_Eyes(TFT_eSPI &tft, int Eye1_x, int Eye1_y, int Eye2_x, int Eye2_y, uint16_t Frames);
     //Test Functions
     void EyeTest(TFT_eSPI &tft);

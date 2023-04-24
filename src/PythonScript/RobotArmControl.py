@@ -13,7 +13,7 @@ import helperfunctions
 import time
 import serial
 
-RUNRATE = 25  #Hz
+RUNRATE = 40  #Hz
 DEBUG = True
 DEBUGCONTROLLER = False
 
@@ -29,7 +29,7 @@ RobotArmSerial = serial.Serial(port, baudrate, bytesize, parity, stopbits, timeo
 time.sleep(2)
 print("Serial port", port, "opened")
 
-InputsWanted = ["LXaxis","LYaxis","L2", "R2", "L1", "R1", "Triangle", "Circle", "Square"]
+InputsWanted = ["LXaxis","LYaxis", "L2", "R2", "L1", "R1", "Triangle", "Circle", "Square", "RXaxis", "RYaxis"]
 DataToSend = {"Header": "FF"}
 OutputString = ""
 

@@ -25,10 +25,13 @@ int Controller::GetControllerData(){
 
         //Now check if the Data's first item is the header
         if(SerialData.substring(0, SerialData.indexOf(',')) == this->Header){
+            SerialData = SerialData.substring(SerialData.indexOf(',') + 1);
             //Now we need to get the data
             for(int i = 0; i < ControllerDataLength; i++){
-                SerialData = SerialData.substring(SerialData.indexOf(',') + 1);
-                this->Data[i] = SerialData.substring(0, SerialData.indexOf(',')).toInt();
+                int index = SerialData.indexOf(",");
+                //this->Data[i] = SerialData.substring(0, SerialData.indexOf(',')).toInt();
+                this->Data[i] = atoi(SerialData.substring(0, index).c_str());
+                SerialData = SerialData.substring(index + 1);
             }
         }
     //}

@@ -41,6 +41,7 @@ void setup()
   Serial.println("Setup Routine Done");
   Eyes.WakeUp(tft);
   Eyes.LookAround(tft);
+  Eyes.MoveEyesToCenter(tft);
 }
 
 
@@ -71,7 +72,12 @@ void loop()
       if(!following){
         Eyes.WakeUp(tft);
         following = true;
-      }      
+      }
+      int Roll = random(0, 100);
+      if(Roll < 40 && (millis() % 10000 < 5000)){
+        Eyes.ChangeMoodRandom(tft);
+        Eyes.EyeWiggle(tft);
+      }             
       Eyes.Move_Eyes(tft, Eye1FinalX, Eye1FinalY, Eye2FinalX, Eye2FinalY, 4);
       //Clear the Serial Buffer
       while(Serial.available()){
@@ -82,8 +88,14 @@ void loop()
   if(millis() - UARTReciveTime > 5000){
     //Eyes.EyeTest(tft);
     following = false;
+    Eyes.MoveEyesToCenter(tft);
     Eyes.DoSomething(tft);
     delay(500);
+  }
+  if(millis() - UARTReciveTime > 3000 && following == true){
+    //Look around
+    Eyes.MoveEyesToCenter(tft);    
+    Eyes.LookAround(tft);
   }
   
 }

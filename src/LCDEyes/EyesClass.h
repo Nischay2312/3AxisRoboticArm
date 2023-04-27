@@ -65,6 +65,7 @@ class EyesClass{
     void Draw_Eyes(TFT_eSPI &tft);
     void Move_Eyes(int Eye1_x, int Eye1_y, int Eye2_x, int Eye2_y);
     void ChangeMood(Mood mood);
+    void MoveEyesToCenter(TFT_eSPI &tft);
     //Animation Functions -> execute within 1-2 seconds
     void Blink(TFT_eSPI &tft);
     void Wink(TFT_eSPI &tft);

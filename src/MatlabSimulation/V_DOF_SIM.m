@@ -62,7 +62,7 @@ addBody(robot, end_effector, robot.BodyNames{end});
 %       VERIFYING THE TRANSFORMATION MATRIX          %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-joint_angles = pi/180*[0, 0, 00, 90, 90]; % Change this to the desired initial joint angles
+joint_angles = pi/180*[0, 0, 0, 90, 00]; % Change this to the desired initial joint angles
 Cosines = [ cos(joint_angles(1)), cos(joint_angles(2)), cos(joint_angles(3)), cos(joint_angles(4)), cos(joint_angles(5))];
 Sines = [ sin(joint_angles(1)), sin(joint_angles(2)), sin(joint_angles(3)), sin(joint_angles(4)), sin(joint_angles(5))];
 

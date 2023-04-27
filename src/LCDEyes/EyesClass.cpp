@@ -362,6 +362,16 @@ void EyesClass::Move_Eyes(int Eye1_x, int Eye1_y, int Eye2_x, int Eye2_y){
   this->Eye2_centerY = Eye2_y;
 }
 
+/*
+    *Function to move the eyes to the center default position
+    * @param tft - reference to the tft object
+*/
+void EyesClass::MoveEyesToCenter(TFT_eSPI &tft){
+    this->Clear_Eyes(tft, 1);
+    //Move the eyes to the center
+    this->Move_Eyes(45, 64, 115, 64);
+    this->Draw_Eyes(tft);
+}
 
 /*
     *Function to Animate moving the eyes
@@ -614,8 +624,8 @@ void EyesClass::DoSomething(TFT_eSPI &tft){
     if(this->Mood_State == this->Sleeping){
         //if the eyes are sleeping then wake them up
         //select randomly to either continue sleeping or wake up
-        int WakeUp = random(0, 10);  
-        if(WakeUp == 1){
+        int WakeUp = random(0, 100);  
+        if(WakeUp < 5){
             //wake up
             this->WakeUp(tft);
         }

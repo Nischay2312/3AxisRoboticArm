@@ -18,7 +18,7 @@ import serial
 import time
 
 async def receive_images():
-    async with websockets.connect('ws://192.168.4.1:8080') as websocket:
+    async with websockets.connect('ws://192.168.1.6:8080') as websocket:
         while True:
             # Receive a binary imagews://192.168.4.1:8080 from the WebSocket server
             img_bytes = await websocket.recv()
@@ -99,8 +99,8 @@ async def Send_data():
 # SCRIPT STARTS HERE
 
 # IMAGE PROCESSING SETUP
-ImageWidth = 800
-ImageHeight = 600
+ImageWidth = 640
+ImageHeight = 480
 cv2.namedWindow('ESP32-CAM', cv2.WINDOW_NORMAL)
 cv2.resizeWindow('ESP32-CAM', ImageWidth, ImageHeight)
 #this global variable will store the latest largest face

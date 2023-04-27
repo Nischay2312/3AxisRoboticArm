@@ -14,7 +14,7 @@
 #define SYSTEM_VERSION "1.0.0"
 #define SYSTEM_NAME "5AxisRoboticArm"
 #define SYSTEM_AUTHOR "Nischay Joshi"
-#define LOOP_FREQUENCY 100 
+#define LOOP_FREQUENCY 50 
 #define LOOP_DELAY 1000/LOOP_FREQUENCY
 
 // Base Servo Constants

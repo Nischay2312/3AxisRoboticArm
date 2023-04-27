@@ -13,7 +13,7 @@ import helperfunctions
 import time
 import serial
 
-RUNRATE = 40  #Hz
+RUNRATE = 50  #Hz
 DEBUG = True
 DEBUGCONTROLLER = False
 

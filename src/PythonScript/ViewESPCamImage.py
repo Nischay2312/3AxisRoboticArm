@@ -26,7 +26,7 @@ async def receive_images():
             yield img_np
 
 cv2.namedWindow('ESP32-CAM', cv2.WINDOW_NORMAL)
-cv2.resizeWindow('ESP32-CAM', 800, 600)
+cv2.resizeWindow('ESP32-CAM', 640, 480)
 
 
 async def Display_images():

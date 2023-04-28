@@ -190,6 +190,7 @@ void EyesClass::Clear_Eyes(TFT_eSPI &tft, bool clear_all){
     if(clear_all){
         tft.fillRect(this->Eye1_centerX - EYE_WIDTH/2, this->Eye1_centerY - EYE_HEIGHT, EYE_WIDTH, EYE_HEIGHT, BG_COLOR);
         tft.fillRect(this->Eye2_centerX - EYE_WIDTH/2, this->Eye2_centerY - EYE_HEIGHT, EYE_WIDTH, EYE_HEIGHT, BG_COLOR);
+        tft.fillScreen(BG_COLOR);
     }
     else{
         this->Clear_Eyes(tft);
@@ -459,8 +460,9 @@ void EyesClass::ChangeMoodRandom(TFT_eSPI &tft){
     Mood Moodenum = static_cast<Mood>(Happy + mood);
     //change the mood
     this->ChangeMood(Moodenum);
-    //Now display the eyes
-    this->Draw_Eyes(tft);
+    // //Now display the eyes
+    // this->Draw_Eyes(tft);
+    this->Blink(tft);
 }
 /*
     * Function to make the robot go to sleep
@@ -468,10 +470,10 @@ void EyesClass::ChangeMoodRandom(TFT_eSPI &tft){
 */
 void EyesClass::Sleep(TFT_eSPI &tft){
     //Slowly make the eyes smaller
-    this->ShrinkEye(0, 50, 5, tft);
-    this->ShrinkEye(0, 80, 8, tft);
+    this->ShrinkEye(0, 50, 8, tft);
+    this->ShrinkEye(0, 80, 10, tft);
     delay(100);
-    this->ShrinkEye(0,90, 5, tft);
+    this->ShrinkEye(0,90, 8, tft);
     //clear the eyes
     this->Clear_Eyes(tft, 1);
     this->ChangeMood(this->Sleeping);
@@ -495,10 +497,10 @@ void EyesClass::WakeUp(TFT_eSPI &tft){
       this->ChangeMood(this->Neutral);
     }
     //Quickly Make the eyes bigger than normal
-    this->ShrinkEye(0, -30, 3, tft);
+    this->ShrinkEye(0, -30, 6, tft);
     //delay(50);
     //Slowly make the eyes normal size
-    this->ShrinkEye(0, 30, 6, tft);
+    this->ShrinkEye(0, 30, 12, tft);
     //Open the eye
     this->OpenEyes(tft);
     delay(50);
@@ -526,6 +528,7 @@ void EyesClass::EyeWiggle(TFT_eSPI &tft){
 */
 void EyesClass::SadLookSide(TFT_eSPI &tft){
     //Change the mood to sad
+    this->Clear_Eyes(tft, 1);
     this->ChangeMood(this->Sad);
     //Store the current eye position
     int Eye1_x = this->Eye1_centerX;
@@ -533,15 +536,16 @@ void EyesClass::SadLookSide(TFT_eSPI &tft){
     int Eye2_x = this->Eye2_centerX;
     int Eye2_y = this->Eye2_centerY;
     //Move the eyes to the left
-    this->Move_Eyes(tft, this->Eye1_centerX + 8, this->Eye1_centerY - 8, this->Eye2_centerX + 8, this->Eye2_centerY - 8, 5);
-    this->Move_Eyes(tft, this->Eye1_centerX + 7, this->Eye1_centerY + 5, this->Eye2_centerX + 7, this->Eye2_centerY + 5, 4);
-    this->Move_Eyes(tft, this->Eye1_centerX + 6, this->Eye1_centerY + 7, this->Eye2_centerX + 6, this->Eye2_centerY + 7, 4);
-    this->Move_Eyes(tft, this->Eye1_centerX + 3, this->Eye1_centerY + 11, this->Eye2_centerX + 3, this->Eye2_centerY + 11, 3);
+    this->Move_Eyes(tft, this->Eye1_centerX + 8, this->Eye1_centerY - 8, this->Eye2_centerX + 8, this->Eye2_centerY - 8, 8);
+    this->Move_Eyes(tft, this->Eye1_centerX + 7, this->Eye1_centerY + 5, this->Eye2_centerX + 7, this->Eye2_centerY + 5, 5);
+    this->Move_Eyes(tft, this->Eye1_centerX + 6, this->Eye1_centerY + 7, this->Eye2_centerX + 6, this->Eye2_centerY + 7, 5);
+    this->Move_Eyes(tft, this->Eye1_centerX + 3, this->Eye1_centerY + 11, this->Eye2_centerX + 3, this->Eye2_centerY + 11, 4);
     //shrink the eyes
     this->ShrinkEye(0, 50, 6, tft);
     delay(1200);
     //Move the eyes back to the center
     this->Move_Eyes(tft, Eye1_x, Eye1_y, Eye2_x, Eye2_y, 4);
+    this->ShrinkEye(0, 0, 2, tft);
     this->ChangeMood(this->Neutral);
     this->Clear_Eyes(tft, 1);
     this->Draw_Eyes(tft);
@@ -564,25 +568,25 @@ void EyesClass::LookAround(TFT_eSPI &tft){
     int movedist = 20;
     //Move the eyes to the left
     this->ShrinkEye(2, -40, 2, tft);
-    this->Move_Eyes(tft, this->Eye1_centerX + movedist, this->Eye1_centerY - movedist, this->Eye2_centerX + movedist, this->Eye2_centerY - movedist, 3);
+    this->Move_Eyes(tft, this->Eye1_centerX + movedist, this->Eye1_centerY - movedist, this->Eye2_centerX + movedist, this->Eye2_centerY - movedist, 5);
     delay(holdDelay);
     //this->Move_Eyes(tft, this->Eye1_centerX - 10, this->Eye1_centerY +10, this->Eye2_centerX -10 , this->Eye2_centerY + 10, 2);
     delay(holdDelay/10);
     this->ShrinkEye(2, 0, 2, tft);
     this->ShrinkEye(1, -40, 2, tft);
-    this->Move_Eyes(tft, this->Eye1_centerX - 2*movedist, this->Eye1_centerY - movedist*0, this->Eye2_centerX - 2*movedist, this->Eye2_centerY - 0*movedist, 3);
+    this->Move_Eyes(tft, this->Eye1_centerX - 2*movedist, this->Eye1_centerY - movedist*0, this->Eye2_centerX - 2*movedist, this->Eye2_centerY - 0*movedist, 5);
     delay(holdDelay);
     //this->Move_Eyes(tft, this->Eye1_centerX + 10, this->Eye1_centerY + 10, this->Eye2_centerX + 10 , this->Eye2_centerY + 10, 2);
     delay(holdDelay/10);
     this->ShrinkEye(1, 0, 2, tft);
     this->ShrinkEye(2, -40, 2, tft);
-    this->Move_Eyes(tft, this->Eye1_centerX + 2*movedist, this->Eye1_centerY + 2*movedist, this->Eye2_centerX + 2*movedist, this->Eye2_centerY + 2*movedist, 3);
+    this->Move_Eyes(tft, this->Eye1_centerX + 2*movedist, this->Eye1_centerY + 2*movedist, this->Eye2_centerX + 2*movedist, this->Eye2_centerY + 2*movedist, 5);
     delay(holdDelay);
     //this->Move_Eyes(tft, this->Eye1_centerX + 10, this->Eye1_centerY - 10, this->Eye2_centerX + 10 , this->Eye2_centerY - 10, 2);
     delay(holdDelay/10);
     this->ShrinkEye(2, 0, 2, tft);
     this->ShrinkEye(1, -40, 2, tft);
-    this->Move_Eyes(tft, this->Eye1_centerX - 2*movedist, this->Eye1_centerY + movedist*0, this->Eye2_centerX - 2*movedist, this->Eye2_centerY + movedist*0, 3);
+    this->Move_Eyes(tft, this->Eye1_centerX - 2*movedist, this->Eye1_centerY + movedist*0, this->Eye2_centerX - 2*movedist, this->Eye2_centerY + movedist*0, 5);
     delay(holdDelay);
     //this->Move_Eyes(tft, this->Eye1_centerX - 10, this->Eye1_centerY - 10, this->Eye2_centerX - 10 , this->Eye2_centerY - 10, 2);
     delay(holdDelay/10);
@@ -590,6 +594,41 @@ void EyesClass::LookAround(TFT_eSPI &tft){
     //Move the eyes back to the center
     this->Move_Eyes(tft, Eye1_x, Eye1_y, Eye2_x, Eye2_y, 2);
 }
+
+
+/*
+    * Function to make the robot Eyes look to the side
+    * @param tft - TFT_eSPI object to draw on
+*/
+void EyesClass::LookSide(TFT_eSPI &tft){
+    //Store the current eye position
+    int Eye1_x = this->Eye1_centerX;
+    int Eye1_y = this->Eye1_centerY;
+    int Eye2_x = this->Eye2_centerX;
+    int Eye2_y = this->Eye2_centerY;
+    int holdDelay  = 150;
+    int movedist = 20;
+    int shrinksize = -50;
+
+    this->Clear_Eyes(tft, 1);
+    //move the eyes to the right
+    this->Move_Eyes(tft, this->Eye1_centerX + movedist, this->Eye1_centerY, this->Eye2_centerX + movedist, this->Eye2_centerY, 6);
+    this->ShrinkEye(2, shrinksize, 2, tft);
+    delay(holdDelay);
+    //go back to center
+    this->ShrinkEye(2, 0, 2, tft);
+    this->Move_Eyes(tft, this->Eye1_centerX - movedist, this->Eye1_centerY, this->Eye2_centerX - movedist, this->Eye2_centerY, 2);
+    //now look to the left
+    this->Move_Eyes(tft, this->Eye1_centerX - movedist, this->Eye1_centerY, this->Eye2_centerX - movedist, this->Eye2_centerY, 6);
+    this->ShrinkEye(1, shrinksize, 2, tft);
+    delay(holdDelay);
+    //go back to center
+    this->ShrinkEye(1, 0, 2, tft);
+    this->Move_Eyes(tft, this->Eye1_centerX + movedist, this->Eye1_centerY, this->Eye2_centerX + movedist, this->Eye2_centerY, 2);
+    //Move the eyes back to the center
+    this->Move_Eyes(tft, Eye1_x, Eye1_y, Eye2_x, Eye2_y, 2);
+}
+
 /*
     * Function to make the robot Eyes make the Dwane Johnson "The Rock" look
     * @param tft - TFT_eSPI object to draw on
@@ -631,7 +670,8 @@ void EyesClass::DoSomething(TFT_eSPI &tft){
         }
         else{
             //continue sleeping
-            this->Draw_Eyes(tft);        
+            this->Draw_Eyes(tft); 
+            delay(150);       
         }
         return;
     }
@@ -651,7 +691,8 @@ void EyesClass::DoSomething(TFT_eSPI &tft){
         &EyesClass::SadLookSide,
         // void CrazyLook(TFT_eSPI &tft);
         &EyesClass::TheRockLook,
-        &EyesClass::LookAround
+        &EyesClass::LookAround,
+        &EyesClass::LookSide
         };
 
     //Choose a random function, get the size of the array and then get a random number between 0 and the size of the array

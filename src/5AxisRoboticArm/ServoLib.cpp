@@ -17,7 +17,7 @@
     @param MinPos: The minimum position of the servo
     @param Speed: The speed at which the servo should move
 */
-ServoLib::ServoLib(uint8_t servoPin, int MaxPos, int MinPos, uint16_t Speed, int Default){
+ServoLib::ServoLib(uint8_t servoPin, int MaxPos, int MinPos, uint16_t Speed, int Default, int LowW, int HighW){
     this->servoPin = servoPin;
     this->MaxPos = MaxPos;
     this->MinPos = MinPos;
@@ -27,6 +27,8 @@ ServoLib::ServoLib(uint8_t servoPin, int MaxPos, int MinPos, uint16_t Speed, int
     //Serial.print("Default Pos set to: ");
     //Serial.println(this->DefaultPos);
     this->SetDelay();
+    this->LowWidth = LowW;
+    this->HighWidth = HighW;
 }
 
 /*
@@ -133,7 +135,7 @@ void ServoLib::UpdateServoParams(int MaxPos, int MinPos, uint16_t Speed){
     SetupServo: This function sets up the servo
 */
 void ServoLib::SetupServo(){
-    this->servo.attach(servoPin);
+    this->servo.attach(servoPin, LowWidth, HighWidth);
     this->servo.write(this->CurrentPos);
     //Put the Servo to the initial position
     this->ServoGoto(this->CurrentPos);

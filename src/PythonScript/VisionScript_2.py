@@ -39,7 +39,7 @@ async def Process_image():
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         # Detect faces in the grayscale image
-        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.5, minNeighbors=4)
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
         
         #find the largest face
         largest_face_cords = 0
@@ -115,7 +115,7 @@ baudrate = 115200
 bytesize = serial.EIGHTBITS
 parity = serial.PARITY_NONE
 stopbits = serial.STOPBITS_ONE
-DataSendRate = 5 # hz
+DataSendRate = 15 # hz
 Header = "FF,"
 OutputString = ""
 # open the serial port

@@ -26,10 +26,12 @@ class ServoLib{
         char buffer[500];
         Servo servo;
         void SetDelay();
+        int LowWidth = 1000;
+        int HighWidth = 2000; 
 
     public:
         int DefaultPos;
-        ServoLib(uint8_t servoPin, int MaxPos, int MinPos, uint16_t Speed, int Default);
+        ServoLib(uint8_t servoPin, int MaxPos, int MinPos, uint16_t Speed, int Default, int LowW, int HighW);
         void ServoSetPos(int Pos);
         void ServoGoto(int Pos);
         void UpdateServoParams(int MaxPos, int MinPos, uint16_t Speed);

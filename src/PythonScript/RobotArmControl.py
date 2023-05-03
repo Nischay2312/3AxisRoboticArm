@@ -13,7 +13,7 @@ import helperfunctions
 import time
 import serial
 
-RUNRATE = 50  #Hz
+RUNRATE = 40  #Hz
 DEBUG = True
 DEBUGCONTROLLER = False
 
@@ -85,7 +85,7 @@ while True:
         #now prepare the output String
         for key in DataToSend:
             OutputString += DataToSend[key] + ","
-        OutputString = OutputString[:-1] + "\n"
+        OutputString = OutputString[:-1] + ",45\n"
 
         if DEBUG:
             print(OutputString)

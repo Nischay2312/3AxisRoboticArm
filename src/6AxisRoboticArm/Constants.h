@@ -62,6 +62,15 @@
 #define WRIST_P_SRVO_LOW_WIDTH 500
 #define WRIST_P_SRVO_HIGH_WIDTH 2500
 
+//Wrist Yaw Servo Constants
+#define WRIST_Y_SERVO_PIN 6
+#define WRIST_Y_SERVO_MAX 180
+#define WRIST_Y_SERVO_MIN 0
+#define WRIST_Y_SERVO_DEF 0
+#define WRIST_Y_SERVO_SPEED 2
+#define WRIST_Y_SRVO_LOW_WIDTH 500
+#define WRIST_Y_SRVO_HIGH_WIDTH 2500
+
 //Gripper Servo Constants
 #define GRIPPER_SERVO_PIN 12
 #define GRIPPER_SERVO_MIN 0

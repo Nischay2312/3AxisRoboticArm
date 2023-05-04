@@ -10,6 +10,7 @@
 #include "Constants.h"
 #include "Controller.h"
 
+
 //Create the base servo Object
 ServoLib BaseServo(BASE_SERVO_PIN, BASE_SERVO_MAX, BASE_SERVO_MIN, BASE_SERVO_SPEED, BASE_SERVO_DEF, BASE_SRVO_LOW_WIDTH, BASE_SRVO_HIGH_WIDTH);
 ServoLib LowArmServo(LOWARM_SERVO_PIN, LOWARM_SERVO_MAX, LOWARM_SERVO_MIN, LOWARM_SERVO_SPEED, LOWARM_SERVO_DEF, LOWARM_SRVO_LOW_WIDTH, LOWARM_SRVO_HIGH_WIDTH);
@@ -37,6 +38,7 @@ float UpArmAngle;
 float WristPitchAngle;
 float WristRollAngle;
 float WristYawAngle;
+float GripperAngle;
 
 bool GripperState;  //0 = Close, 1 = Open
 bool isAtDefault = false;
@@ -48,6 +50,9 @@ unsigned long gripperTime = 0;
 
 void ECHOSerialData();
 void HeartBeat();
+void GamepadControl();
+void DebugStatements();
+void AngleInputControl();
 
 void setup() {
   Serial.begin(115200);
@@ -86,15 +91,65 @@ void setup() {
   //Here we will make sure that the RobotArmInput is setup and ready to go
   if (!RobotArmInput.SetupController()) {
     Serial.println("Controller Setup Failed");
-    while (1)
-      ;
   }
-  RobotArmInput.UpdateDataAverage();
+  else{
+    RobotArmInput.UpdateDataAverage();
+  }
   Serial.println("Setup Complete");
   delay(1000);
 }
 
 void loop() {
+
+  AngleInputControl();
+  GamepadControl();
+  if (millis() - inputTime > 1000) {
+    //HeartBeat();
+  }
+  delay(LOOP_DELAY);
+}
+
+void AngleInputControl(){
+    int numServos = 7;
+    int Angles[numServos] = {0};
+
+    if(Serial.available()){
+      //Read the Serial Data
+      String SerialData = Serial.readStringUntil('\n');
+      //Now check if the Data's first item is the header
+      if(SerialData.substring(0, SerialData.indexOf(',')) == "ANG"){
+          SerialData = SerialData.substring(SerialData.indexOf(',') + 1);
+          //Now we need to get the data
+          for(int i = 0; i < numServos; i++){
+              int index = SerialData.indexOf(",");
+              Angles[i] = atoi(SerialData.substring(0, index).c_str());
+              SerialData = SerialData.substring(index + 1);
+          }
+        //Now Write the angles to the servo:
+        BaseAngle = Angles[0];
+        LowArmAngle = Angles[1];
+        UpArmAngle = Angles[2];
+        WristPitchAngle = Angles[3];
+        WristRollAngle = Angles[4];
+        WristYawAngle = Angles[5];
+        GripperAngle = Angles[6];
+
+        //Send the Servo Angles
+        BaseServo.ServoSetPos((int)BaseAngle);
+        LowArmServo.ServoSetPos((int)LowArmAngle);
+        UpArmServo.ServoSetPos((int)UpArmAngle);
+        WristPitchServo.ServoSetPos((int)WristPitchAngle);
+        WristRollServo.ServoSetPos((int)WristRollAngle);
+        WristYawServo.ServoSetPos((int)WristYawAngle);
+        GripperServo.ServoSetPos((int)GripperAngle);
+
+        //Print the angles
+        DebugStatements();
+      }
+    }     
+}
+
+void GamepadControl(){
   //Get the Controller Data
   if (RobotArmInput.GetControllerData()) {
     inputTime = millis();
@@ -112,8 +167,6 @@ void loop() {
     WristYawAngle += abs(RobotArmInput.DataAverage[11] - RobotArmInput.Data[11]) > StickDeadZone ? ((RobotArmInput.DataAverage[11] - RobotArmInput.Data[11]) * WristRollTurnSpeed * -1) : 0;
 
     //Check if the Angles are within the limits
-    //UpArmAngle = UpArmAngle < 38 + 40 + UPARM_SERVO_MIN - LowArmAngle ? 38 + 40 + UPARM_SERVO_MIN - LowArmAngle  : UpArmAngle;
-    //UpArmAngle = UpArmAngle > 159 + 40 + UPARM_SERVO_MAX - LowArmAngle ? 159 + 40 + UPARM_SERVO_MAX - LowArmAngle  : UpArmAngle;
     BaseAngle = BaseAngle > BASE_SERVO_MAX ? BASE_SERVO_MAX : BaseAngle;
     BaseAngle = BaseAngle < BASE_SERVO_MIN ? BASE_SERVO_MIN : BaseAngle;
     LowArmAngle = LowArmAngle > LOWARM_SERVO_MAX ? LOWARM_SERVO_MAX : LowArmAngle;
@@ -161,17 +214,26 @@ void loop() {
     isAtDefault = false;
   }
 
+}
+
+void DebugStatements(){
   //Debug Statements
-  // Serial.print("Base Angle Received: ");
-  // Serial.println(BaseAngle);
-  // Serial.print("Low Arm Angle Received: ");
-  // Serial.println(LowArmAngle);
-  // Serial.print("Up Arm Angle Received: ");
-  // Serial.println(UpArmAngle);
-  if (millis() - inputTime > 1000) {
-    HeartBeat();
-  }
-  delay(LOOP_DELAY);
+   Serial.println("------------------------------------");
+   Serial.print("Base Angle Received: ");
+   Serial.println(BaseAngle);
+   Serial.print("Low Arm Angle Received: ");
+   Serial.println(LowArmAngle);
+   Serial.print("Up Arm Angle Received: ");
+   Serial.println(UpArmAngle);
+   Serial.print("Wrist Roll Angle Received: ");
+   Serial.println(WristRollAngle);
+   Serial.print("Wrist Pitch Angle Received: ");
+   Serial.println(WristPitchAngle);
+   Serial.print("Wrist Yaw Angle Received: ");
+   Serial.println(WristYawAngle);
+   Serial.print("Gripper Angle Received: ");
+   Serial.println(GripperAngle);
+   Serial.print("------------------------------------");
 }
 
 void ECHOSerialData() {

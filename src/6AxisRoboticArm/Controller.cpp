@@ -78,7 +78,7 @@ int Controller::SetupController(){
     //The plan is to send a command to the controller and wait for a response
     //Now we wait for the response, the controller will start outputting the data
     //We will wait for 1000 iterations
-    int timeout = 1000;
+    int timeout = 100;
     while(timeout > 0){
         //Send the command
         Serial.println("FF");

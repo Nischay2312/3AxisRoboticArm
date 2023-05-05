@@ -1,6 +1,6 @@
 close all
-clear all
-clc
+% clear all
+% clc
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %       BUILDING THE ROBOT          %
@@ -8,11 +8,12 @@ clc
 
 % Import required packages
 import robotics.RigidBodyTree;
+import robotics.InverseKinematics;
 import robotics.RigidBody;
 
 % Define robot arm
-num_links = 5;
-link_lengths = [0.047855, 0.047855, 0.117, 0.095, 0.0276, 0.0381, 0.05, 0.005];
+num_links = 7; %(6 moving + 1 endeffector)
+link_lengths = [0.04, 0.05, 0.10, 0.150, 0.05, 0.01, 0.10];
 
 % Create a RigidBodyTree object
 robot = RigidBodyTree;
@@ -22,19 +23,21 @@ joint_axes = [
     0 0 1;
     1 0 0;
     1 0 0;
+    1 0 0;
     0 1 0;
-    1 0 0
+    0 0 1
 ];
 link_axes = [
     0 0 1;
     0 0 1;
     0 1 0;
     0 1 0;
-    0 1 0
+    0 1 0;
+    0 1 0;
 ];
 
 % Create links and attach them to the robot
-for i = 1:num_links
+for i = 1:num_links-1
     if i == 1
         body = RigidBody("RotatingBase");
         joint = robotics.Joint(['BaseJoint', num2str(i)], 'revolute');
@@ -46,7 +49,7 @@ for i = 1:num_links
         body = RigidBody(['Link', num2str(i-1)]);
         joint = robotics.Joint(['Joint', num2str(i)], 'revolute');
         joint.JointAxis = joint_axes(i, :);
-        setFixedTransform(joint, trvec2tform(link_lengths(i-1)*link_axes(i,:)));
+        setFixedTransform(joint, trvec2tform(link_lengths(i)*link_axes(i,:)));
         body.Joint = joint;
         addBody(robot, body, robot.BodyNames{end});
     end
@@ -54,27 +57,32 @@ end
 
 % Add end-effector
 end_effector = RigidBody('EndEffector');
-setFixedTransform(end_effector.Joint, trvec2tform([0, link_lengths(7), link_lengths(8)]));
+setFixedTransform(end_effector.Joint, trvec2tform([0, 0, -1*link_lengths(7)]));
 addBody(robot, end_effector, robot.BodyNames{end});
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %       VERIFYING THE TRANSFORMATION MATRIX          %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-joint_angles = pi/180*[0   0    0   0    0]; % Change this to the desired initial joint angles
+joint_angles = pi/180*[0, 110, -90, 0, 0, 0]; % Change this to the desired initial joint angles
 
 % Calculate the transformation matrix using forward kinematics
 config_verification = homeConfiguration(robot);
-for i = 1:num_links
+for i = 1:num_links-1
     config_verification(i).JointPosition = joint_angles(i);
 end
 figure(1)
-ax = show(robot, config_verification);
+ax = show(robot, config_verification, 'Frames', 'on');
 ax.XLim = [-1, 1]; ax.YLim = [-1, 1]; ax.ZLim = [-1, 1]; % Set axis limits
 ax.DataAspectRatio = [1 1 1];
 title('Robot Cofiguration for Joint Angles Set 1');
 
 T = getTransform(robot, config_verification, robot.BodyNames{end});
+JRobot_lib = geometricJacobian(robot, config_verification, 'EndEffector');
+% Display the transformation matrix
+disp('Robot Jacobian:');
+disp(JRobot_lib);
 
 % Display the transformation matrix
 disp('Transformation matrix Toolbox:');
@@ -96,15 +104,16 @@ disp(eulXYZ1);
 disp('Orienataion(toolbox):');
 disp(eulXYZ2);
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %       INVERSE KINEMATICS           %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-learning_rate = 0.1;
-max_iterations = 500;
-tolerance = 0.01;
+learning_rate = 0.5;
+max_iterations = 10000;
+tolerance = 0.005;
 
-XYZ_d = [0.00; 0.28; 0.10];
-euler_desired = pi/180*[0 90 0];
+XYZ_d = [0.0; 0.310; -0.01];
+euler_desired = pi/180*[0 0 90];
 RotM_desired = eul2rotm(euler_desired, 'XYZ');
 
 Xdesired = [ RotM_desired XYZ_d;
@@ -123,12 +132,12 @@ disp(Xdesired);
 desired_position = Xdesired(1:3, 4);
 desired_orientation = Xdesired(1:3, 1:3);
 
-starting_joints = pi/180*[ 0 0 0 0 0]; 
+starting_joints = pi/180*[0 0 0 0 0 0]; 
 
 T_test = forward_kinematics(starting_joints, link_lengths);
 disp('T_test:');
 disp(T_test);
-joint_angles_solution = inverse_kinematics_gradient_descent(desired_position, desired_orientation, joint_angles, link_lengths, @forward_kinematics, learning_rate, max_iterations, tolerance);
+joint_angles_solution = inverse_kinematics_gradient_descent(desired_position, desired_orientation, starting_joints, link_lengths, @forward_kinematics, learning_rate, max_iterations, tolerance);
 disp('Joint angles solution:');
 disp(180/pi*joint_angles_solution);
 
@@ -138,17 +147,38 @@ disp(T_final);
 disp("Final position eorro:")
 disp(compute_pose_error(desired_position, desired_orientation, T_final))
 
-%Make the robot go to the resulting position
+%now use the inbuilt solver to get the joint angles
+ik = robotics.InverseKinematics('RigidBodyTree', robot);
+weights = [0.25 0.25 0.25 1 1 1];
+desired_pose = Xdesired;
+initial_guess = homeConfiguration(robot);
+for i = 1:length(starting_joints)
+    initial_guess(i).JointPosition = starting_joints(i);
+end
+[jointConfigSol, info] = ik('EndEffector', desired_pose, weights, initial_guess);
+joint_angles_Solver = zeros(1, 6);
 
-AnimateRobot(robot, starting_joints, joint_angles_solution, num_links, link_lengths)
+for i = 1:6
+    joint_angles_Solver(i) = jointConfigSol(i).JointPosition;
+end
+T_final_solver = forward_kinematics(joint_angles_Solver, link_lengths);
+disp("Final Transformation matrix(SOLVER):");
+disp(T_final_solver);
+
+disp('Joint angles solution(IK SOLVER):');
+disp(180/pi*joint_angles_Solver);
+
+%Make the robot go to the resulting position
+AnimateRobot(robot, starting_joints, joint_angles_solution, num_links, link_lengths, 2)
+AnimateRobot(robot, starting_joints, joint_angles_Solver, num_links, link_lengths, 5)
 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %       ANIMATING THE ROBOT          %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function AnimateRobot(robot, initial_joints, final_joints, num_links, link_lengths)
-    o = 2;
+function AnimateRobot(robot, initial_joints, final_joints, num_links, link_lengths, o)
+ 
     figure(o);
     % Initial and final joint angles (in radians)
     joint_angles_initial = initial_joints; % Change this to the desired initial joint angles
@@ -158,7 +188,7 @@ function AnimateRobot(robot, initial_joints, final_joints, num_links, link_lengt
     config_initial = homeConfiguration(robot);
     config_final = homeConfiguration(robot);
 
-    for i = 1:num_links
+    for i = 1:num_links-1
         config_initial(i).JointPosition = joint_angles_initial(i);
         config_final(i).JointPosition = joint_angles_final(i);
     end
@@ -178,7 +208,7 @@ function AnimateRobot(robot, initial_joints, final_joints, num_links, link_lengt
 
     for step = 1:n_steps
         config_intermediate = homeConfiguration(robot);
-        for i = 1:num_links
+        for i = 1:num_links-1
             config_intermediate(i).JointPosition = joint_angles_initial(i) + (step/n_steps) * (joint_angles_final(i) - joint_angles_initial(i));
         end
         % Store end-effector position
@@ -192,7 +222,7 @@ function AnimateRobot(robot, initial_joints, final_joints, num_links, link_lengt
     % Add labels for each link and the end-effector
     hold on;
     plot3(end_effector_positions(:,1), end_effector_positions(:,2)+ link_lengths(7), end_effector_positions(:,3), 'b.-', 'MarkerSize', 10);
-    for i = 1:(num_links + 1)
+    for i = 1:(num_links)
         body = robot.BodyNames{i};
         T = getTransform(robot, config_final, body);
         position = tform2trvec(T);
@@ -213,13 +243,15 @@ end
 function error = compute_pose_error(desired_position, desired_orientation, T)
     current_position = T(1:3, 4);
     current_orientation = T(1:3, 1:3);
-%     position_error = sqrt((desired_position*desired_position - current_position*current_position));
-     orientation_err = norm(rotm2eul(current_orientation,'XYZ') - rotm2eul(desired_orientation,'XYZ'));
+    position_error = norm(current_position - desired_position);
+%      orientation_err = norm(rotm2eul(current_orientation,'XYZ') - rotm2eul(desired_orientation,'XYZ'));
 %     error = [position_error; orientation_error];
-    error = norm(current_position - desired_position) + orientation_err;
+    orientation_error = acos((trace(current_orientation * desired_orientation')-1)/2);
+    error = 1*position_error + 1*orientation_error;
 end
 
-function joint_angles = inverse_kinematics_gradient_descent(desired_position, desired_orientation, joint_angles, link_lengths, forward_kinematics_func, learning_rate, max_iterations, tolerance)
+function joint_angles = inverse_kinematics_gradient_descent(desired_position, desired_orientation, joint_angles, link_lengths, forward_kinematics, learning_rate, max_iterations, tolerance)
+    broke = 0;
     for i = 1:max_iterations
         for j = numel(joint_angles):-1:1
             %Compute the current orientation and position of the robot
@@ -228,12 +260,13 @@ function joint_angles = inverse_kinematics_gradient_descent(desired_position, de
             error = compute_pose_error(desired_position, desired_orientation, T);
             %Break condition
             if (error) < tolerance
+                broke = 1;
                 break;
             end
 
             % Compute the gradient of the error with respect to joint angles
             % using an approximation
-            angle_step = 0.01*pi/180;
+            angle_step = 0.0001*pi/180;
             joint_angles(j) = joint_angles(j) + angle_step;
             %recompute the updated Endeffector position and position error
             T_step = forward_kinematics(joint_angles, link_lengths);
@@ -252,6 +285,9 @@ function joint_angles = inverse_kinematics_gradient_descent(desired_position, de
                 joint_angles(j) = joint_angles(j) - learning_rate * gradient;
             end
         end
+        if(broke == 1)
+            break;
+        end
     end
     disp('Iterations: ')
     disp(i)
@@ -264,6 +300,7 @@ function T = forward_kinematics(joint_angles, link_lengths)
     q3 = joint_angles(3);
     q4 = joint_angles(4);
     q5 = joint_angles(5);
+    q6 = joint_angles(6);
 
     b = link_lengths(1);
     l1 = link_lengths(2);
@@ -272,7 +309,6 @@ function T = forward_kinematics(joint_angles, link_lengths)
     l4 = link_lengths(5);
     l5 = link_lengths(6);
     l6 = link_lengths(7);
-    l7 = link_lengths(8);
 
     % Calculate the transformation matrices using the given joint angles and link lengths
     T01 = [ cos(q1)  -sin(q1)  0  0;
@@ -290,32 +326,37 @@ function T = forward_kinematics(joint_angles, link_lengths)
             0  sin(q3)  cos(q3)  0;
             0  0        0        1 ];
 
-    T34 = [ cos(q4)  0  sin(q4)  0;
-                  0  1        0  l3;
-           -sin(q4)  0  cos(q4)  0;
-                  0  0        0  1 ];
-
-    T45 = [ 1  0        0         0;
-            0  cos(q5) -sin(q5)  l4;
-            0  sin(q5)  cos(q5)  0;
+    T34 = [ 1  0        0         0;
+            0  cos(q4) -sin(q4)  l3;
+            0  sin(q4)  cos(q4)  0;
             0  0        0        1 ];
 
-    T56 = [ 1  0  0  0;
-            0  1  0  l5 + l6;
-            0  0  1  l7;
+    T45 = [ cos(q5)  0  sin(q5)  0;
+                  0  1        0  l4;
+           -sin(q5)  0  cos(q5)  0;
+                  0  0        0  1 ];
+
+    T56 = [ cos(q6)  -sin(q6)  0  0;
+            sin(q6)   cos(q6)  0  l5;
+                  0        0   1  0;
+                  0        0   0  1 ];
+
+    T67 = [ 1  0  0  0;
+            0  1  0  0;
+            0  0  1  -1*l6;
             0  0  0  1 ];
 
     % Calculate the end-effector transformation matrix by multiplying the individual transformation matrices
-    T = T01 * T12 * T23 * T34 * T45 * T56;
+    T = T01 * T12 * T23 * T34 * T45 * T56 * T67;
 end
 
 function Sym_T = TranslationMatrix_Symbolic
-syms q1 q2 q3 q4 q5 b l1 l2 l3 l4 l5 l6 l7  %Robot joint angle and link lengths
+syms q1 q2 q3 q4 q5 q6 b l1 l2 l3 l4 l5 l6   %Robot joint angle and link lengths
 
 %Declare the variables
-Sym_Cosines = [ cos(q1), cos(q2), cos(q3), cos(q4), cos(q5)];
-Sym_Sines = [ sin(q1), sin(q2), sin(q3), sin(q4), sin(q5)];
-Sym_link_lengths = [ b, l1, l2, l3, l4, l5, l6, l7];
+Sym_Cosines = [ cos(q1), cos(q2), cos(q3), cos(q4), cos(q5), cos(q6)];
+Sym_Sines = [ sin(q1), sin(q2), sin(q3), sin(q4), sin(q5), sin(q6)];
+Sym_link_lengths = [ b, l1, l2, l3, l4, l5, l6];
 
 %form the Transformation matrices
 Sym_T01 = [ Sym_Cosines(1)  -Sym_Sines(1)       0       0;
@@ -335,26 +376,33 @@ Sym_T23 = [ 1            0              0       0;
             0      Sym_Sines(3)     Sym_Cosines(3)      0;
             0            0              0       1
           ];
+      
+Sym_T34 = [ 1            0              0       0;
+            0    Sym_Cosines(4)      -Sym_Sines(4)      Sym_link_lengths(4);
+            0      Sym_Sines(4)     Sym_Cosines(4)      0;
+            0            0              0       1
+          ];
 
-Sym_T34 = [ Sym_Cosines(4)   0       Sym_Sines(4)      0;
-                0            1              0       Sym_link_lengths(4);
-            -Sym_Sines(4)    0      Sym_Cosines(4)      0;
+
+Sym_T45 = [ Sym_Cosines(5)   0       Sym_Sines(5)      0;
+                0            1              0       Sym_link_lengths(5);
+            -Sym_Sines(5)    0      Sym_Cosines(5)      0;
                 0            0              0       1
            ];
 
-Sym_T45 = [ 1            0              0       0;
-            0    Sym_Cosines(5)      -Sym_Sines(5)      Sym_link_lengths(5);
-            0      Sym_Sines(5)     Sym_Cosines(5)      0;
-            0            0              0       1
+Sym_T56 = [ Sym_Cosines(6)  -Sym_Sines(6)       0       0;
+            Sym_Sines(6)     Sym_Cosines(6)     0       0;
+                    0            0              1       Sym_link_lengths(6);
+                    0            0              0       1
           ];
   
-Sym_T56 = [ 1            0              0       0;
-            0            1              0      Sym_link_lengths(5) + Sym_link_lengths(6);
-            0            0              1       Sym_link_lengths(7);
+Sym_T67 = [ 1            0              0       0;
+            0            1              0       0;
+            0            0              1       -1*Sym_link_lengths(7);
             0            0              0       1
           ];
 
-Sym_T = Sym_T01 * Sym_T12 * Sym_T23 * Sym_T34 * Sym_T45 * Sym_T56;
+Sym_T = Sym_T01 * Sym_T12 * Sym_T23 * Sym_T34 * Sym_T45 * Sym_T56 * Sym_T67;
 disp('Tranfomration Matrix Symbolic:');
 disp(Sym_T);
 end

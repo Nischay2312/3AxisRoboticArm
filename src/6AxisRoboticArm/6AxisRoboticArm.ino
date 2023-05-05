@@ -4,6 +4,7 @@
   Date: 05/04/2023
   Description: This is a Controller for 6 axis robotic arm. Currently controlled by Serial Input
                The Arm is from this kit (https://a.co/d/7kXuqwg) and is slight modified to add one more axis of rotation. i.e 7 servos to control (including griper)
+               ANG, 95, 50, 137, 100, 82, 85, 50               
 */
 
 #include "ServoLib.h"

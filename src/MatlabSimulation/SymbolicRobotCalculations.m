@@ -1,13 +1,13 @@
 clear all
-syms q1 q2 q3 q4 q5 q6 b l1 l2 l3 l4 l5 l6 real
 Jacobian_sym = calculateSymbolicJacobian;
 joint_angles = pi/180*[0, 110, -90, 0, 0, 0]; % Replace these with your joint angle values
 link_lengths = [0.10, 0.150, 0.05, 0.01, 0.10];
-J_num1 = (subs(Jacobian_sym, [q1, q2, q3, q4, q5, q6], joint_angles));
+% J_num1 = (subs(Jacobian_sym, [q1, q2, q3, q4, q5, q6], joint_angles));
 Jnum2 = evaluateJacobian(Jacobian_sym, joint_angles)
 
 
 function J_num = evaluateJacobian(J_sym,joint_angles)
+    syms q1 q2 q3 q4 q5 q6 real
     J_num = double(subs(J_sym, symvar(J_sym), joint_angles));
 end
 

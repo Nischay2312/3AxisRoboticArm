@@ -65,7 +65,7 @@ addBody(robot, end_effector, robot.BodyNames{end});
 %       VERIFYING THE TRANSFORMATION MATRIX          %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-joint_angles = pi/180*[0, 0, 0, 0, 0, 0]; % Change this to the desired initial joint angles
+joint_angles = pi/180*[-38, 75, -38, 37, 0, 37]; % Change this to the desired initial joint angles
 
 % Calculate the transformation matrix using forward kinematics
 config_verification = homeConfiguration(robot);
@@ -116,8 +116,8 @@ tolerance = 1e-2;
 
 J_sym = calculateSymbolicJacobian(link_lengths);
 
-XYZ_desired = [0.00; 0.16; 0.2];
-euler_desired = pi/180*[-10 0 0];
+XYZ_desired = [0.00; 0.10; 0.31];
+euler_desired = pi/180*[0 0 0];
 RotM_desired = eul2rotm(euler_desired, 'XYZ');
     
 Tdesired = [ RotM_desired XYZ_desired;
@@ -129,9 +129,9 @@ T_input = Tdesired;
            
 % IKINTest(robot, link_lengths, num_links, J_sym);
 %plan path from initial joint angles to Tmanual
-joint_angles_initial = pi/180*[0   36.0848   72.9329  -89.0177         0         0]; % Change this to the desired initial joint angles
+joint_angles_initial = pi/180*[-0, 0, 0, 0, 0, 0]; % Change this to the desired initial joint angles
 
-nSteps = 15;
+nSteps = 5;
 JointArray = PathPlanning(joint_angles_initial, T_input, J_sym, nSteps, link_lengths);
 
 %display the position of the endeffector and the error
@@ -293,16 +293,15 @@ function [joint_solution, AngleHistory1, ErrorHistory1] = inverse_kinematics_Jac
         AngleHistory(i,:) = joint_solution;
         ErrorHistory(i) = norm(Error);
         Jacobian = evaluateJacobian(Jacobian_Sym, joint_solution);
-%          angleStep = 1*pinv(Jacobian)*(Error);
-         angleStep = 0.5*(Jacobian)'*(Error);
+        angleStep = 0.42*pinv(Jacobian)*(Error);
         %lambda = 0.5; % Damping factor, you can adjust this value
         lambda = 0.001;
-          angleStep = ((Jacobian' * Jacobian) + (lambda^2 * eye(size(Jacobian, 1))))\Jacobian' * (Error);
-         joint_solution = joint_solution + angleStep';
+%         angleStep = ((Jacobian' * Jacobian) + (lambda^2 * eye(size(Jacobian, 1))))\Jacobian' * (Error);
+        joint_solution = joint_solution + angleStep';
 %         %keep the joint angles between -pi/2 and pi/2
-        for j = 1:numel(joint_solution)
-            joint_solution(j) = max(min(joint_solution(j), pi), -pi);
-        end
+%         for j = 1:numel(joint_solution)
+%             joint_solution(j) = max(min(joint_solution(j), pi/2.01), -pi/2.01);
+%         end
 
 %         joint_solution = mod(joint_solution, 2*pi);
         Tcurrent = forward_kinematics(joint_solution, link_lengths);
@@ -517,7 +516,7 @@ function jointList = PathPlanning(initial_joints, TDesired, J_sym, nSteps, link_
     stepSize = (desiredVariables - currentVariables)/nSteps;
 
     %set up for the solver
-    max_iterations = 15;
+    max_iterations = 20;
     tolerance = 0.001;
     %compute the path
     for i = 1:nSteps
@@ -537,8 +536,7 @@ function jointList = PathPlanning(initial_joints, TDesired, J_sym, nSteps, link_
 
         %do the inverse kinematics 
         [desiredJoints, AngleHistory, ErrorHistory] = inverse_kinematics_Jacobian(Tdesired, J_sym, initial_joints, link_lengths, max_iterations, tolerance);        
-        Jacobian = evaluateJacobian(J_sym, desiredJoints)
-        det(Jacobian)
+        
         %keep the joint angles between -2pi and 2pi
         for j = 1:numel(desiredJoints)
 %             if desiredJoints(j) > 2*pi
@@ -547,7 +545,7 @@ function jointList = PathPlanning(initial_joints, TDesired, J_sym, nSteps, link_
 %                 desiredJoints(j) = mod(desiredJoints(j), 2*pi);
 %             end
               %keep the joint angles between -pi/2 and pi/2
-              desiredJoints(j) = max(min(desiredJoints(j), pi), -pi);
+              desiredJoints(j) = max(min(desiredJoints(j), pi/2.01), -pi/2.01);
 
         end
 

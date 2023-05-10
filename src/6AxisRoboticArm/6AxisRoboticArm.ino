@@ -4,7 +4,7 @@
   Date: 05/04/2023
   Description: This is a Controller for 6 axis robotic arm. Currently controlled by Serial Input
                The Arm is from this kit (https://a.co/d/7kXuqwg) and is slight modified to add one more axis of rotation. i.e 7 servos to control (including griper)
-               ANG, 95, 50, 137, 100, 82, 85, 50               
+               ANG, 95, 50, 137, 100, 82, 85, 50, END               
 */
 
 #include "ServoLib.h"
@@ -33,6 +33,7 @@ Controller RobotArmInput;
 #define WristYawTurnSpeed 0.04
 
 //Global Variables
+#define NumServos 7
 float BaseAngle;
 float LowArmAngle;
 float UpArmAngle;
@@ -40,6 +41,8 @@ float WristPitchAngle;
 float WristRollAngle;
 float WristYawAngle;
 float GripperAngle;
+float alpha = 0.04; // Low-pass filter weight, adjust this value as needed
+float prev_output[NumServos] = {0}; // Previous output values for each servo
 
 bool GripperState;  //0 = Close, 1 = Open
 bool isAtDefault = false;
@@ -54,6 +57,8 @@ void HeartBeat();
 void GamepadControl();
 void DebugStatements();
 void AngleInputControl();
+int CheckArrayEqual(int *array1, int* array2, int size);
+float lowPassFilter(float input, int index);
 
 void setup() {
   Serial.begin(115200);
@@ -103,7 +108,7 @@ void setup() {
 void loop() {
 
   AngleInputControl();
-  GamepadControl();
+  //GamepadControl();
   if (millis() - inputTime > 1000) {
     //HeartBeat();
   }
@@ -113,6 +118,7 @@ void loop() {
 void AngleInputControl(){
     int numServos = 7;
     int Angles[numServos] = {0};
+    int CurrentAngles[numServos] = {0};
 
     if(Serial.available()){
       //Read the Serial Data
@@ -126,26 +132,90 @@ void AngleInputControl(){
               Angles[i] = atoi(SerialData.substring(0, index).c_str());
               SerialData = SerialData.substring(index + 1);
           }
-        //Now Write the angles to the servo:
-        BaseAngle = Angles[0];
-        LowArmAngle = Angles[1];
-        UpArmAngle = Angles[2];
-        WristPitchAngle = Angles[3];
-        WristRollAngle = Angles[4];
-        WristYawAngle = Angles[5];
-        GripperAngle = Angles[6];
+          //If the next element in the string left is 'END' then we can move the servos otheerwise the data is invalid and return
+          if(!(SerialData.substring(0, SerialData.indexOf(',')) == " END")){
+              Serial.println("Invalid Data");
+              return;
+          }
 
-        //Send the Servo Angles
-        BaseServo.ServoSetPos((int)BaseAngle);
-        LowArmServo.ServoSetPos((int)LowArmAngle);
-        UpArmServo.ServoSetPos((int)UpArmAngle);
-        WristPitchServo.ServoSetPos((int)WristPitchAngle);
-        WristRollServo.ServoSetPos((int)WristRollAngle);
-        WristYawServo.ServoSetPos((int)WristYawAngle);
-        GripperServo.ServoSetPos((int)GripperAngle);
+        //Get the servos current position
+        CurrentAngles[0] = BaseServo.CurrentPos;
+        CurrentAngles[1] = LowArmServo.CurrentPos;
+        CurrentAngles[2] = UpArmServo.CurrentPos;
+        CurrentAngles[3] = WristPitchServo.CurrentPos;
+        CurrentAngles[4] = WristRollServo.CurrentPos;
+        CurrentAngles[5] = WristYawServo.CurrentPos;
+        CurrentAngles[6] = GripperServo.CurrentPos;
+          int j = 0;
+        //now we gradually move the servos to the new position
+        while(!CheckArrayEqual(CurrentAngles, Angles, numServos)){
+        //Update the angles
+        for(int i = 0; i < numServos; i++){
+          //Serial.print("Index: ");
+          //Serial.println(i);
+          if(Angles[i] != CurrentAngles[i]){
+            // if(Angles[i] > CurrentAngles[i]){
+            //   CurrentAngles[i] = round(lowPassFilter(CurrentAngles[i] + 1, i));
+            // }
+            // else{
+            //   CurrentAngles[i] = round(lowPassFilter(CurrentAngles[i] - 1, i));
+            // }
+            CurrentAngles[i] = round(lowPassFilter(Angles[i], i));
+          }
+          //Serial.println(CurrentAngles[i]);
+        }
+        //Now Write the angles to the servo:
+        BaseAngle = round(CurrentAngles[0]);
+        LowArmAngle = round(CurrentAngles[1]);
+        UpArmAngle = round(CurrentAngles[2]);
+        WristPitchAngle = round(CurrentAngles[3]);
+        WristRollAngle = round(CurrentAngles[4]);
+        WristYawAngle = round(CurrentAngles[5]);
+        GripperAngle = round(CurrentAngles[6]);
+          //Send the Servo Angles
+          BaseServo.ServoSetPos((int)BaseAngle);
+          LowArmServo.ServoSetPos((int)LowArmAngle);
+          UpArmServo.ServoSetPos((int)UpArmAngle);
+          WristPitchServo.ServoSetPos((int)WristPitchAngle);
+          WristRollServo.ServoSetPos((int)WristRollAngle);
+          WristYawServo.ServoSetPos((int)WristYawAngle);
+          GripperServo.ServoSetPos((int)GripperAngle);
+          delay(20);
+          j++;
+          //DebugStatements();
+        }
+        //Serial.print("Filter iteration: ");
+        //Serial.print(j);
+
+          // BaseAngle = Angles[0];
+          // LowArmAngle = Angles[1];
+          // UpArmAngle = Angles[2];
+          // WristPitchAngle = Angles[3];
+          // WristRollAngle = Angles[4];
+          // WristYawAngle = Angles[5];
+          // GripperAngle = Angles[6];
+
+          // BaseServo.ServoSetPos((int)BaseAngle);
+          // LowArmServo.ServoSetPos((int)LowArmAngle);
+          // UpArmServo.ServoSetPos((int)UpArmAngle);
+          // WristPitchServo.ServoSetPos((int)WristPitchAngle);
+          // WristRollServo.ServoSetPos((int)WristRollAngle);
+          // WristYawServo.ServoSetPos((int)WristYawAngle);
+          // GripperServo.ServoSetPos((int)GripperAngle);
+
+
+
+        //  BaseServo.ServoGoto((int)BaseAngle);
+        // LowArmServo.ServoGoto((int)LowArmAngle);
+        // UpArmServo.ServoGoto((int)UpArmAngle);
+        // WristPitchServo.ServoGoto((int)WristPitchAngle);
+        // WristRollServo.ServoGoto((int)WristRollAngle);
+        // WristYawServo.ServoGoto((int)WristYawAngle);
+        // GripperServo.ServoSetPos((int)GripperAngle);
 
         //Print the angles
-        DebugStatements();
+        //DebugStatements();
+        Serial.println("0");
       }
     }     
 }
@@ -270,4 +340,24 @@ void HeartBeat() {
 
     beatTime = millis();
   }
+}
+
+int CheckArrayEqual(int *array1, int* array2, int size){
+  for(int i = 0; i < size; i++){
+    if(array1[i] != array2[i]){
+      return 0;
+    }
+  }
+  return 1;
+}
+
+// Simple Low-Pass Filter
+float lowPassFilter(float input, int index){
+    //Serial.print("INPUT: ");
+    //Serial.println(input);
+    float output = alpha * input + (1.0 - alpha) * prev_output[index];
+    prev_output[index] = output;
+    //Serial.print("OUTPUT:");
+    //Serial.println(output);
+    return output;
 }

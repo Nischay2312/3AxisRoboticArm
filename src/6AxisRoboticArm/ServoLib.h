@@ -17,7 +17,6 @@
 class ServoLib{
     private:
         uint8_t servoPin;
-        int CurrentPos = 0;
         int MaxPos;
         int MinPos;
         uint16_t Speed;
@@ -31,6 +30,7 @@ class ServoLib{
 
     public:
         int DefaultPos;
+        int CurrentPos = 0;
         ServoLib(uint8_t servoPin, int MaxPos, int MinPos, uint16_t Speed, int Default, int LowW, int HighW);
         void ServoSetPos(int Pos);
         void ServoGoto(int Pos);

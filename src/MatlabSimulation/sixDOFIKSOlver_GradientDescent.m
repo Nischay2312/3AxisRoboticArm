@@ -111,20 +111,23 @@ disp(eulXYZ1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %       INVERSE KINEMATICS           %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-max_iterations = 10;
-tolerance = 1e-2;
-
-J_sym = calculateSymbolicJacobian(link_lengths);
+max_iterations = 50;        %100
+tolerance = 1e-2;       %1e-2  
 
 %%%%%%%%%%%%%%%--Multi Point Path Planning--%%%%%%%%%%%%%%%%%
 % Define target points as an N x 6 matrix, where N is the number of target points
 % Each row contains XYZ position and Euler angles in the format [X Y Z Rx Ry Rz steps]
 target_points = [
-    0.00 0.1698 0.2859 10 0 0 10;
-    0.00 0.1718 0.1945 10 0 0 10;
-    0.00 0.1718 0.1945 10 0 0 10;
-%     0.00 0.1718 0.1945 10 0 0 10;
-    0.00 0.1698 0.2859 10 0 0 10;
+    0.00 0.14 0.10 0 0 0 8;
+    0.00 0.14 0.10 0 0 0 8;
+    0.00 0.26 0.10  0 0 0 8;
+%     0.0 0.10 0.10 10 0 0 8;
+%     0.20 -0.08 0.10 10 0 0 8;
+%    -0.20 -0.08 0.3059 10 0 0 8;
+%     0.0 0.1698 0.3059 10 0 0 8;
+%     0.00 0.1718 0.1945 0 0 0 5;
+%     0.00 0.1698 0.3059 0 0 0 5;
+%     0.00 0.1698 0.2859 10 0 0 10;
     % Add more target points as needed
 ];
 
@@ -141,8 +144,10 @@ T_input = Tdesired;
 
 joint_angles_initial = pi/180*[0 130 -93 20 0 0]; % Change this to the desired initial joint angles
 
+% [FinalJoints, AngleHistory1, ErrorHistory1] = inverse_kinematics_Gradient(Tdesired, joint_angles_initial, link_lengths, max_iterations, tolerance);
+
 % Call the multi_point_path_planning function
-JointArray = multi_point_path_planning(joint_angles_initial, target_points, link_lengths, J_sym);
+JointArray = multi_point_path_planning(joint_angles_initial, target_points, link_lengths);
 
 %display the position of the endeffector and the error
 FinalJoints = JointArray(end, :);
@@ -326,10 +331,11 @@ function error = compute_pose_error(TDesired, TCurrent)
     desired_orientation = TDesired(1:3, 1:3);
     position_error = (desired_position - current_position);
     orientation_err =(rotm2eul(desired_orientation,'XYZ') - rotm2eul(current_orientation,'XYZ'));
-    error = [orientation_err*0 , position_error']';
+    %orientation_err = acos((trace(current_orientation * desired_orientation')-1)/2);
+    error = [orientation_err*1 , position_error']';
 end
 
-function [joint_solution, AngleHistory1, ErrorHistory1, Jacobian] = inverse_kinematics_Jacobian(TDesired, Jacobian_Sym, initial_guess, link_lengths, max_iterations, tolerance)
+function [joint_solution, AngleHistory1, ErrorHistory1] = inverse_kinematics_Gradient(TDesired, initial_guess, link_lengths, max_iterations, tolerance)
     disp('entered ikin func')
     joint_solution = initial_guess;
     Tcurrent = forward_kinematics(joint_solution, link_lengths);
@@ -341,28 +347,39 @@ function [joint_solution, AngleHistory1, ErrorHistory1, Jacobian] = inverse_kine
     jointLimMin = pi/180*[-85 -35 -140 -80 -82 -83];
     for i = 1:max_iterations
         if norm(Error) < tolerance
+            disp('position reached')
             break
         end
         AngleHistory(i,:) = joint_solution;
         ErrorHistory(i) = norm(Error);
-        Jacobian = evaluateJacobian(Jacobian_Sym, joint_solution);
-        disp('jacobian evaluated')
-%          angleStep = 1*pinv(Jacobian)*(Error);
-%       angleStep = 0.01*(Jacobian)'*(Error);
-        %lambda = 0.5; % Damping factor, you can adjust this value
-        lambda = 0.001;
-        angleStep = ((Jacobian' * Jacobian) + (lambda^2 * eye(size(Jacobian, 1))))\Jacobian' * (Error);
-        joint_solution = joint_solution + angleStep';
-%       %keep the joint angles between -pi/2 and pi/2
+        angleStep = 0.01*pi/180;        %0.01
+            alpha = 0.000001;            %0.000005
+        arrayend = numel(joint_solution);
+        %compute the angle step for all the joints
         for j = 1:numel(joint_solution)
-%             joint_solution(j) = min(max(joint_solution(j), jointLimMax(j)), jointLimMin(j));
+            Tcurrent = forward_kinematics(joint_solution, link_lengths);
+            Error = compute_pose_error(TDesired, Tcurrent);
+            %compute the gradient
+            joint_solution(j) = joint_solution(j) + angleStep; 
+            T_deltatTheta = forward_kinematics(joint_solution, link_lengths);
+            error_delta_theta = compute_pose_error(TDesired, T_deltatTheta);
+            
+            Gradient = (norm(error_delta_theta)-norm(Error))/angleStep;
+            
+            ThetaChange = -alpha*Gradient/angleStep;
+            
+            joint_solution(j) = joint_solution(j) + ThetaChange - angleStep;
+            %clamp the joint angle
+            joint_solution(j) = max(min(joint_solution(j), jointLimMax(j)), jointLimMin(j));
         end
-%         joint_solution = mod(joint_solution, 2*pi);
+
         Tcurrent = forward_kinematics(joint_solution, link_lengths);
         Error = compute_pose_error(TDesired, Tcurrent); 
+        disp('one iteration done')
     end
     AngleHistory1 = AngleHistory(1:i-1,:);
     ErrorHistory1 = ErrorHistory(1:i-1);
+    disp('ikin complete')
 end
 
 function T = forward_kinematics(joint_angles, link_lengths)
@@ -550,7 +567,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %       Functions For PathPlanning          %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function jointList1 = PathPlanning(initial_joints, TDesired, J_sym, nSteps, link_lengths)
+function jointList1 = PathPlanning(initial_joints, TDesired, nSteps, link_lengths)
     %allocate the resulting joint list
     jointList = zeros(nSteps, numel(initial_joints));
     
@@ -574,9 +591,10 @@ function jointList1 = PathPlanning(initial_joints, TDesired, J_sym, nSteps, link
     stepSize = (desiredVariables - currentVariables)/nSteps;
 
     %set up for the solver
-    max_iterations = 6;
+    max_iterations = 100;
     tolerance = 0.001;
     %compute the path
+    singubreak = 0;
     for i = 1:nSteps
         disp('Iteration:')
         disp(i)
@@ -595,23 +613,7 @@ function jointList1 = PathPlanning(initial_joints, TDesired, J_sym, nSteps, link
                     ];
 %       Tdesired = eul2tform(currentVariables(1:3)','XYZ') * ([currentVariables(4:6); 1]);
         %do the inverse kinematics 
-        [desiredJoints, AngleHistory, ErrorHistory, Jacobian] = inverse_kinematics_Jacobian(Tdesired, J_sym, initial_joints, link_lengths, max_iterations, tolerance);        
-%         Jacobian = evaluateJacobian(J_sym, desiredJoints);
-        Jacobian_det = det(Jacobian);
-        disp('Jacobian');
-        disp(Jacobian);
-        disp('Jacobian Determinant')
-        disp(Jacobian_det);
-        if(abs(Jacobian_det) < 0.0008)
-            disp('Approaching a singularity. Terminating Path Planner');
-            disp('Singularity is near: ');
-            disp(Tdesired);
-            disp('Current Position Desired');
-            disp(currentVariables);
-            disp('Joint angles needed to achieve the position');
-            disp(180/pi*desiredJoints);
-            break
-        end
+        [desiredJoints, AngleHistory, ErrorHistory] = inverse_kinematics_Gradient(Tdesired, initial_joints, link_lengths, max_iterations, tolerance);        
         %keep the joint angles between -2pi and 2pi
         for j = 1:numel(desiredJoints)
 %             if desiredJoints(j) > 2*pi
@@ -624,7 +626,7 @@ function jointList1 = PathPlanning(initial_joints, TDesired, J_sym, nSteps, link
               desiredJoints(j) = max(min(desiredJoints(j), jointLimMax(j)), jointLimMin(j));
 
         end
-
+        
         %store the desired joint angles
         jointList(i,:) = desiredJoints;
 
@@ -632,10 +634,14 @@ function jointList1 = PathPlanning(initial_joints, TDesired, J_sym, nSteps, link
         initial_joints = desiredJoints;
 
     end
-    jointList1 = jointList(1:i-1,:);
+    if singubreak == 1
+        jointList1 = jointList(1:i-1,:);
+    else
+        jointList1 = jointList(1:i,:);
+    end
 end
 
-function JointArray1 = multi_point_path_planning(joint_angles_initial, target_points, link_lengths, J_sym)
+function JointArray1 = multi_point_path_planning(joint_angles_initial, target_points, link_lengths)
 
     % Calculate the total number of rows required for the JointArray
     nSteps = sum(target_points(:, 7));
@@ -665,7 +671,7 @@ function JointArray1 = multi_point_path_planning(joint_angles_initial, target_po
         
 
         % Perform path planning from the current joint configuration to the target point
-        JointPath = PathPlanning(joint_angles_initial, Tdesired, J_sym, nSteps, link_lengths);
+        JointPath = PathPlanning(joint_angles_initial, Tdesired, nSteps, link_lengths);
         
         % Get the length of the JointPath
         path_length = size(JointPath, 1);
@@ -737,7 +743,7 @@ function IKINTest(robot, link_lengths, num_links, J_sym)
     AnimateRobot(robot, initial_guess, joint_angles_Solver, num_links, link_lengths, 5)
     
     
-    [joint_solution, AngleHistory, ErrorHistory] = inverse_kinematics_Jacobian(Tdesired, J_sym, initial_guess, link_lengths, max_iterations, tolerance);
+    [joint_solution, AngleHistory, ErrorHistory] = inverse_kinematics_Gradient(Tdesired, J_sym, initial_guess, link_lengths, max_iterations, tolerance);
     disp('Joint solution:');
     disp(180/pi*joint_solution);
     

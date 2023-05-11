@@ -43,7 +43,7 @@ angleList = read_csv(angleFile)
 # Start sending the angles
 while True:
     #send every 5th row
-    for angle in range(0, len(angleList), 5):
+    for angle in range(0, len(angleList), 8):
         # Prepare the output string
         output_string = f"ANG,{angleList[angle][0]},{angleList[angle][1]},{angleList[angle][2]},{angleList[angle][3]},{angleList[angle][4]},{angleList[angle][5]},50, END\n"
         # output_string = f"ANG,{angle[0]},{angle[1]},{angle[2]},{angle[3]},{angle[4]},{angle[5]},50, END\n"

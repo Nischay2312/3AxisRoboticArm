@@ -118,9 +118,21 @@ tolerance = 1e-2;       %1e-2
 % Define target points as an N x 6 matrix, where N is the number of target points
 % Each row contains XYZ position and Euler angles in the format [X Y Z Rx Ry Rz steps]
 target_points = [
-    0.00 0.14 0.10 0 0 0 8;
-    0.00 0.14 0.10 0 0 0 8;
-    0.00 0.26 0.10  0 0 0 8;
+    0.00 0.17 0.10 0 0 0 8;
+   -0.10 0.17 0.10 0 0 0 8;
+    0.00 0.17 0.30 0 0 0 8;
+    0.10 0.17 0.11 0 0 0 8;
+    0.00 0.17 0.11 0 0 0 8;
+    0.00 0.17 0.30 0 0 0 8;
+    0.10 0.17 0.30 0 0 0 8;
+    0.10 0.17 0.25 0 0 0 8;
+   -0.10 0.17 0.25 0 0 0 8;
+   -0.10 0.17 0.20 0 0 0 8;
+   0.10 0.17 0.20 0 0 0 8;
+   0.10 0.17 0.11 0 0 0 8;
+   -0.10 0.17 0.11 0 0 0 8;
+   0.00 0.17 0.11 0 0 0 8;
+   0.00 0.17 0.30 0 0 0 8;
 %     0.0 0.10 0.10 10 0 0 8;
 %     0.20 -0.08 0.10 10 0 0 8;
 %    -0.20 -0.08 0.3059 10 0 0 8;
@@ -166,6 +178,8 @@ disp(PathError);
 
 disp("Final Joints values:");
 disp(FinalJoints*180/pi);
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -332,7 +346,7 @@ function error = compute_pose_error(TDesired, TCurrent)
     position_error = (desired_position - current_position);
     orientation_err =(rotm2eul(desired_orientation,'XYZ') - rotm2eul(current_orientation,'XYZ'));
     %orientation_err = acos((trace(current_orientation * desired_orientation')-1)/2);
-    error = [orientation_err*1 , position_error']';
+    error = [orientation_err*0 , position_error']';
 end
 
 function [joint_solution, AngleHistory1, ErrorHistory1] = inverse_kinematics_Gradient(TDesired, initial_guess, link_lengths, max_iterations, tolerance)
@@ -375,7 +389,7 @@ function [joint_solution, AngleHistory1, ErrorHistory1] = inverse_kinematics_Gra
 
         Tcurrent = forward_kinematics(joint_solution, link_lengths);
         Error = compute_pose_error(TDesired, Tcurrent); 
-        disp('one iteration done')
+%         disp('one iteration done')
     end
     AngleHistory1 = AngleHistory(1:i-1,:);
     ErrorHistory1 = ErrorHistory(1:i-1);

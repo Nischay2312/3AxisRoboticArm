@@ -14,6 +14,11 @@
 %convert the to integers
 
 %then we write the new array to a file called JointAngles.csv
+    JointArray = JointArray_old;
+    %low pass filter the joint array
+    f_cutoff = 0.5;
+    f_sampl = 5;
+    JointArray = lowpass(JointArray, f_cutoff, f_sampl);
 
 JointArray2Export = 180/pi*JointArray;
 
